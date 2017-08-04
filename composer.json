@@ -1,0 +1,22 @@
+{
+    "name": "wpcampus/wpcampus-social-media-plugin",
+    "description": "WordPress plugin that holds social media functionality for WPCampus websites.",
+    "type": "wordpress-plugin",
+    "authors": [
+        {
+            "name": "WPCampus",
+            "email": "code@wpcampus.org"
+        }
+    ],
+    "license": "GPL-2.0+",
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*",
+        "wp-coding-standards/wpcs": "*"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "./vendor/bin/phpcs --config-set bin ./vendor/bin/phpcs",
+            "./vendor/bin/phpcs --config-set installed_paths ../../wp-coding-standards/wpcs"
+        ]
+    }
+}

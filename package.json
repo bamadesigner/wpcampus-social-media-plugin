@@ -1,0 +1,20 @@
+{
+  "name": "wpcampus-social-media-plugin",
+  "version": "1.0.0",
+  "description": "WordPress plugin that holds social media functionality for WPCampus websites.",
+  "author": "WPCampus",
+  "license": "GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wpcampus/wpcampus-social-media-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wpcampus/wpcampus-social-media-plugin/issues"
+  },
+  "homepage": "https://github.com/wpcampus/wpcampus-social-media-plugin#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-phpcs": "^1.3.0",
+    "gulp-watch": "^4.3.8"
+  }
+}
