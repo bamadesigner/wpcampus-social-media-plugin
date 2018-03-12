@@ -1,2 +1,3 @@
-# wpcampus-social-media-plugin
-WordPress plugin that handles WPCampus social media functionality.
+# WPCampus: Social Media - WordPress Plugin
+
+A WordPress plugin that handles WPCampus social media functionality.

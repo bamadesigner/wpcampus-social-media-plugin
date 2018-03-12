@@ -1,66 +1,95 @@
 <?php
 /**
- * Plugin Name:       WPCampus Social Media
+ * Plugin Name:       WPCampus: Social Media
  * Plugin URI:        https://github.com/wpcampus/wpcampus-social-media-plugin
  * Description:       Holds social media functionality for the WPCampus websites.
  * Version:           1.0.0
  * Author:            WPCampus
  * Author URI:        https://wpcampus.org
- * Text Domain:       wpcampus
+ * Text Domain:       wpcampus-social
  * Domain Path:       /languages
  */
 
-// We only need you in the admin.
+defined( 'ABSPATH' ) or die();
+
+$plugin_dir = wpcampus_social_media()->get_plugin_dir();
+
+require_once $plugin_dir . 'inc/class-wpcampus-social-media-global.php';
+
 if ( is_admin() ) {
-	require_once wpcampus_social_media()->plugin_dir . 'inc/wpcampus-social-media-admin.php';
+	require_once $plugin_dir . 'inc/class-wpcampus-social-media-admin.php';
 }
 
 /**
- * The main class for all WPCampus media types.
+ * Class that manages and returns plugin data.
  *
- * Class    WPCampus_Social_Media
+ * @class       WPCampus_Social_Media
+ * @package     WPCampus Social Media
  */
-class WPCampus_Social_Media {
+final class WPCampus_Social_Media {
 
 	/**
-	 * Holds the absolute URL to
-	 * the main plugin directory.
+	 * Holds the plugin version.
 	 *
-	 * And the directory path
-	 * to the main plugin directory.
-	 *
-	 * @access  public
-	 * @var     string
+	 * @var string
 	 */
-	public $plugin_url;
-	public $plugin_dir;
+	private $version = '1.0.0';
+
+	/**
+	 * Holds the absolute URL and
+	 * the directory path to the
+	 * main plugin directory.
+	 *
+	 * @var string
+	 */
+	private $plugin_url;
+	private $plugin_dir;
 
 	/**
 	 * Holds the class instance.
 	 *
-	 * @access  private
-	 * @var     WPCampus_Social_Media
+	 * @var WPCampus_Social_Media
 	 */
 	private static $instance;
 
 	/**
 	 * Returns the instance of this class.
 	 *
-	 * @access  public
-	 * @return  WPCampus_Social_Media
+	 * @return WPCampus_Social_Media
 	 */
 	public static function instance() {
 		if ( ! isset( self::$instance ) ) {
-			$class_name = __CLASS__;
+			$class_name     = __CLASS__;
 			self::$instance = new $class_name;
 		}
 		return self::$instance;
 	}
 
 	/**
-	 * Warming things up.
+	 * Magic method to output a string if
+	 * trying to use the object as a string.
 	 *
-	 * @access  protected
+	 * @return string
+	 */
+	public function __toString() {
+		// translators: Basic name of the plugin
+		return sprintf( __( '%s: Social Media', 'wpcampus-social' ), 'WPCampus' );
+	}
+
+	/**
+	 * Method to keep our instance
+	 * from being cloned or unserialized
+	 * and to prevent a fatal error when
+	 * calling a method that doesn't exist.
+	 *
+	 * @return void
+	 */
+	public function __clone() {}
+	public function __wakeup() {}
+	public function __call( $method = '', $args = array() ) {}
+
+	/**
+	 * Start your engines.
 	 */
 	protected function __construct() {
 
@@ -68,46 +97,46 @@ class WPCampus_Social_Media {
 		$this->plugin_url = plugin_dir_url( __FILE__ );
 		$this->plugin_dir = plugin_dir_path( __FILE__ );
 
-		// Load our textdomain.
-		add_action( 'init', array( $this, 'textdomain' ) );
-
 	}
 
 	/**
-	 * Method to keep our instance from
-	 * being cloned or unserialized.
+	 * Returns the plugin version.
 	 *
-	 * @access	private
-	 * @return	void
+	 * @return string
 	 */
-	private function __clone() {}
-	private function __wakeup() {}
+	public function get_version() {
+		return $this->version;
+	}
 
 	/**
-	 * Internationalization FTW.
-	 * Load our textdomain.
+	 * Returns the absolute URL to
+	 * the main plugin directory.
 	 *
-	 * @TODO Add language files
-	 *
-	 * @access  public
-	 * @return  void
+	 * @return string
 	 */
-	public function textdomain() {
-		load_plugin_textdomain( 'wpcampus', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	public function get_plugin_url() {
+		return $this->plugin_url;
+	}
+
+	/**
+	 * Returns the directory path
+	 * to the main plugin directory.
+	 *
+	 * @return string
+	 */
+	public function get_plugin_dir() {
+		return $this->plugin_dir;
 	}
 }
 
 /**
- * Returns the instance of our main WPCampus_Social_Media class.
+ * Returns the instance of our WPCampus_Social_Media class.
  *
- * Will come in handy when we need to access the
- * class to retrieve data throughout the plugin.
+ * Use this function and class methods
+ * to retrieve plugin data.
  *
  * @return  WPCampus_Social_Media
  */
 function wpcampus_social_media() {
 	return WPCampus_Social_Media::instance();
 }
-
-// Get the instance going.
-wpcampus_social_media();
