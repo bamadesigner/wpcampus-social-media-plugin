@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       WPCampus: Social Media
  * Plugin URI:        https://github.com/wpcampus/wpcampus-social-media-plugin
- * Description:       Holds social media functionality for the WPCampus websites.
+ * Description:       Manages social media functionality for the WPCampus websites.
  * Version:           1.0.0
  * Author:            WPCampus
  * Author URI:        https://wpcampus.org
