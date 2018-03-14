@@ -1,0 +1,30 @@
+{
+  "name": "wpcampus-social-media-plugin",
+  "version": "1.0.0",
+  "description": "Manages social media functionality for the WPCampus websites.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wpcampus/wpcampus-social-media-plugin.git"
+  },
+  "author": "WPCampus <code@wpcampus.org>",
+  "contributors": [
+    "Rachel Cherry <rachel@wpcampus.org>"
+  ],
+  "license": "GPL-2.0+",
+  "bugs": {
+    "url": "https://github.com/wpcampus/wpcampus-social-media-plugin/issues"
+  },
+  "homepage": "https://github.com/wpcampus/wpcampus-social-media-plugin",
+  "scripts": {
+    "postinstall": "gulp"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^4.1.0",
+    "gulp-clean-css": "^3.9.2",
+    "gulp-merge-media-queries": "^0.2.1",
+    "gulp-notify": "^3.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0"
+  }
+}

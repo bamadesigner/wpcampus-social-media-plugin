@@ -127,6 +127,36 @@ final class WPCampus_Social_Media {
 	public function get_plugin_dir() {
 		return $this->plugin_dir;
 	}
+
+	/**
+	 * Return the user capability string.
+	 */
+	public function get_user_cap_string() {
+		return 'wpc_manage_social_media';
+	}
+
+	/**
+	 * Get the share post types assigned
+	 * for the Revive Social plugin.
+	 */
+	public function get_share_post_types() {
+		return get_option( 'top_opt_post_type' );
+	}
+
+	/**
+	 * Returns the message that Revive Social
+	 * plugin generates for a post.
+	 *
+	 * @args    $post - the post object.
+	 * @args    $network - the social media network, e.g. "facebook" or "twitter".
+	 * @return  array - info for the post, including link and message.
+	 */
+	public function get_message_for_post( $post, $network ) {
+		global $CWP_TOP_Core;
+		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'generateTweetFromPost' ) ) {
+			return $CWP_TOP_Core->generateTweetFromPost( $post, $network );
+		}
+	}
 }
 
 /**

@@ -1,0 +1,62 @@
+$inside-padding: 17px;
+$primary-color: #0073aa;
+$bg-color: rgba($primary-color,0.05);
+#wpcampus-social-mb {
+
+	*:first-child {
+		margin-top: 0;
+	}
+
+	.inside {
+		background: #fff;
+		margin: 0;
+		padding: 0 $inside-padding $inside-padding $inside-padding;
+	}
+
+	.wpcampus-social-pre {
+		margin: 0 ( 0 - $inside-padding );
+		padding: 20px $inside-padding;
+		border-bottom: 1px solid #eee;
+
+		*:first-child {
+			margin-top: 0;
+		}
+
+		*:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	h3 {
+		color: $primary-color;
+		margin: 15px 0 8px 0;
+	}
+
+	textarea {
+		width: 100%;
+		padding: 10px;
+	}
+
+	.wpcampus-social-preview-wrapper {
+		margin: 20px 0 0 0;
+
+		.wpcampus-social-preview {
+			padding: 20px;
+			margin: 0;
+		}
+
+		&.twitter {
+
+			.wpcampus-social-preview {
+				background: $bg-color; //#ebf5f9;
+			}
+		}
+
+		&.facebook {
+
+			.wpcampus-social-preview {
+				background: $bg-color; //#f0f2f7;
+			}
+		}
+	}
+}
