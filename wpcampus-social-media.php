@@ -148,6 +148,42 @@ final class WPCampus_Social_Media {
 	}
 
 	/**
+	 * Creating tweet intent URL.
+	 *
+	 * @param   $args - array - the arguments for the URL.
+	 * @return  string - the URL.
+	 */
+	public function get_tweet_intent_url( $args ) {
+
+		// Build arguments.
+		$final_args = array();
+
+		if ( ! empty( $args['url'] ) ) {
+			$final_args['url'] = urlencode( trim( strip_tags( $args['url'] ) ) );
+		}
+
+		if ( ! empty( $args['via'] ) ) {
+			$final_args['via'] = urlencode( trim( strip_tags( $args['via'] ) ) );
+		}
+
+		if ( ! empty( $args['text'] ) ) {
+			$final_args['text'] = urlencode( trim( strip_tags( $args['text'] ) ) );
+		}
+
+		if ( ! empty( $args['hashtags'] ) ) {
+			if ( is_string( $args['hashtags'] ) ) {
+				$final_args['hashtags'] = trim( strip_tags( $args['hashtags'] ) );
+			} elseif ( is_array( $args['hashtags'] ) ) {
+				$args['hashtags'] = array_map( 'strip_tags', $args['hashtags'] );
+				$args['hashtags'] = array_map( 'trim', $args['hashtags'] );
+				$args['hashtags'] = urlencode( implode( ',', $args['hashtags'] ) );
+			}
+		}
+
+		return add_query_arg( $final_args, 'https://twitter.com/intent/tweet' );
+	}
+
+	/**
 	 * Get the max message length depending on network.
 	 *
 	 * If no network is passed, will get max lengths
