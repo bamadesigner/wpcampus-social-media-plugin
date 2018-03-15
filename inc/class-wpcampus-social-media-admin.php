@@ -11,6 +11,14 @@
 final class WPCampus_Social_Media_Admin {
 
 	/**
+	 * Holds a message for our post meta filter to pick up.
+	 *
+	 * This allows us to see our message as a preview
+	 * without actually editing the post meta table.
+	 */
+	private $filter_message = '';
+
+	/**
 	 * We don't need to instantiate this class.
 	 */
 	protected function __construct() {}
@@ -36,6 +44,12 @@ final class WPCampus_Social_Media_Admin {
 		// Save meta box data.
 		add_action( 'save_post', array( $plugin, 'save_meta_boxes' ), 10, 3 );
 
+		// Filter post meta for social update preview.
+		add_filter( 'get_post_metadata', array( $plugin, 'filter_post_meta' ), 10, 4 );
+
+		// Add AJAX to update social previews.
+		add_action( 'wp_ajax_wpcampus_social_update_preview', array( $plugin, 'ajax_get_message_for_post' ) );
+
 	}
 
 	/**
@@ -57,6 +71,7 @@ final class WPCampus_Social_Media_Admin {
 		$assets_url = wpcampus_social_media()->get_plugin_url() . 'assets/build/';
 
 		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', array(), null );
+		wp_enqueue_script( 'wpcampus-social-edit', $assets_url . 'js/wpcampus-social-edit.min.js', array( 'jquery' ), null, true );
 
 	}
 
@@ -217,12 +232,12 @@ final class WPCampus_Social_Media_Admin {
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at %4$d characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>', $max_twitter_length ); ?></p>
-				<textarea required id="" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( $twitter_message ); ?></textarea>
+				<textarea required class="wpcampus-social-update" data-network="twitter" data-preview="wpcampus-social-preview-twitter" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( $twitter_message ); ?></textarea>
 				<?php
 			endif;
 
 			?>
-			<p class="wpcampus-social-preview">
+			<p id="wpcampus-social-preview-twitter" class="wpcampus-social-preview">
 				<?php
 
 				$tweet_info = wpcampus_social_media()->get_message_for_post( $post, 'twitter' );
@@ -250,12 +265,12 @@ final class WPCampus_Social_Media_Admin {
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom %1$s message for this post. %2$sOur social media service will automatically add the link to the post AND will add the "%3$s" hashtag if you don\'t add it yourself.%4$s The max is set at %5$d characters.', 'wpcampus-social' ), 'Facebook', '<strong>', '#WPCampus', '</strong>', $max_facebook_length ); ?></p>
-				<textarea required id="" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( $facebook_message ); ?></textarea>
+				<textarea required class="wpcampus-social-update" data-network="facebook" data-preview="wpcampus-social-preview-facebook" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( $facebook_message ); ?></textarea>
 				<?php
 			endif;
 
 			?>
-			<p class="wpcampus-social-preview">
+			<p id="wpcampus-social-preview-facebook" class="wpcampus-social-preview">
 				<?php
 
 				$fb_info = wpcampus_social_media()->get_message_for_post( $post, 'facebook' );
@@ -344,6 +359,65 @@ final class WPCampus_Social_Media_Admin {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Return/print the message for a post via AJAX.
+	 */
+	public function ajax_get_message_for_post() {
+
+		$post_id = ! empty( $_GET['post_id'] ) ? (int) $_GET['post_id'] : 0;
+		$network = ! empty( $_GET['network'] ) ? $_GET['network'] : '';
+		$message = ! empty( $_GET['message'] ) ? strip_tags( $_GET['message'] ) : '';
+
+		$new_message = '';
+
+		// Return/echo the post message.
+		if ( $post_id > 0 && ! empty( $network ) && ! empty( $message ) ) {
+
+			/*
+			 * Store our new message for the filter to pick up.
+			 *
+			 * This allows us to see our message as a preview
+			 * without actually editing the post meta table.
+			 */
+			$this->filter_message = $message;
+
+			$post_message = wpcampus_social_media()->get_message_for_post( get_post( $post_id ), $network );
+
+			$new_message = ! empty( $post_message['message'] ) ? $post_message['message'] : '';
+
+		}
+
+		echo $new_message;
+
+		wp_die();
+	}
+
+	/**
+	 * Filter post meta so we can intercept values
+	 * for social update preview without actually
+	 * updating the post meta value in the DB.
+	 *
+	 * @param   $value - string - the meta value we're filtering.
+	 * @param   $object_id - int - Object ID.
+	 * @param   $meta_key - string - Meta key.
+	 * @param   $single - bool - Whether to return only the first value of the specified $meta_key.
+	 * @return  string - the filtered value.
+	 */
+	public function filter_post_meta( $value, $object_id, $meta_key, $single ) {
+
+		// We only want to filter our meta.
+		if ( ! in_array( $meta_key, array( 'wpc_facebook_message', 'wpc_twitter_message' ) ) ) {
+			return $value;
+		}
+
+		// We only want to filter when have a message set.
+		if ( ! empty( $this->filter_message ) ) {
+			return $this->filter_message;
+		}
+
+		return $value;
 	}
 }
 WPCampus_Social_Media_Admin::register();
