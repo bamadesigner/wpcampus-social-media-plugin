@@ -87,7 +87,7 @@ final class WPCampus_Social_Media_Admin {
 	 * @return  void
 	 */
 	public function print_meta_boxes( $post, $metabox ) {
-		switch( $metabox['id'] ) {
+		switch ( $metabox['id'] ) {
 			case 'wpcampus-social-mb':
 				$this->print_social_media_mb( $post );
 				break;

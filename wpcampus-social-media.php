@@ -168,7 +168,7 @@ final class WPCampus_Social_Media {
 			if ( ! empty( $allowed_networks[ $network ] ) ) {
 
 				// Return length stored in options.
-				if ( ! empty( $formats[ $network . '_top_opt_tweet_length'] ) ) {
+				if ( ! empty( $formats[ $network . '_top_opt_tweet_length' ] ) ) {
 					return (int) $formats[ $network . '_top_opt_tweet_length' ];
 				}
 
@@ -182,10 +182,10 @@ final class WPCampus_Social_Media {
 		// If no specific network, get all of them.
 		$max_lengths = array();
 
-		foreach( $allowed_networks as $network_key => $network_length ) {
+		foreach ( $allowed_networks as $network_key => $network_length ) {
 
 			// Set length stored in options.
-			if ( ! empty( $formats[ $network_key . '_top_opt_tweet_length'] ) ) {
+			if ( ! empty( $formats[ $network_key . '_top_opt_tweet_length' ] ) ) {
 				$max_lengths[ $network_key ] = (int) $formats[ $network_key . '_top_opt_tweet_length' ];
 			}
 

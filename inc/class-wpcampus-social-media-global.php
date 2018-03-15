@@ -26,7 +26,7 @@ final class WPCampus_Social_Media_Global {
 		add_action( 'plugins_loaded', array( $plugin, 'textdomain' ) );
 
 		// Filter the tweets.
-		add_filter( 'rop_override_tweet', array( $plugin, 'override_old_post_tweet' ) , 10, 3 );
+		add_filter( 'rop_override_tweet', array( $plugin, 'override_old_post_tweet' ), 10, 3 );
 
 	}
 
@@ -62,15 +62,16 @@ final class WPCampus_Social_Media_Global {
 		$network = $network ?: 'twitter';
 
 		$current_tweet_length = strlen( $final_tweet );
-		$tweet_max_length = wpcampus_social_media()->get_max_message_length( $network );
+		$tweet_max_length     = wpcampus_social_media()->get_max_message_length( $network );
+
 		$ellipses = '...';
 
 		// A URL of any length will be altered to 23 characters.
 		$url_length = 23;
 
-		$bitly = '[bit.ly]';
+		$bitly        = '[bit.ly]';
 		$bitly_length = strlen( $bitly );
-		$has_bitly = ( false !== strpos( $final_tweet, $bitly ) );
+		$has_bitly    = ( false !== strpos( $final_tweet, $bitly ) );
 
 		// If the tweet is blank other than a bitly link.
 		$is_blank = ! $current_tweet_length || ( $has_bitly && $current_tweet_length == $bitly_length );
@@ -86,9 +87,10 @@ final class WPCampus_Social_Media_Global {
 		// If the tweet is blank, compose something simple.
 		if ( $is_blank ) {
 
-			switch( $post->post_type ) {
+			switch ( $post->post_type ) {
 
 				case 'podcast':
+					// translators: A prefix for the WPCampus podcast.
 					$final_tweet_prefix = sprintf( __( 'The %s Podcast:', 'wpcampus-social' ), 'WPCampus' ) . ' ' . $post->post_title;
 					break;
 
@@ -99,7 +101,7 @@ final class WPCampus_Social_Media_Global {
 			}
 
 			// Make sure what we want to prefix isn't too long.
-			$prefix_length = strlen( $final_tweet_prefix );
+			$prefix_length     = strlen( $final_tweet_prefix );
 			$prefix_max_length = $has_bitly ? ( $tweet_max_length - $bitly_length - 1 ) : $tweet_max_length;
 
 			/*
@@ -177,7 +179,7 @@ final class WPCampus_Social_Media_Global {
 			if ( $current_tweet_length < ( $tweet_max_length - 1 ) ) {
 
 				// We only want to add the hashtag once so replace first occurrence.
-				$first_wpcampus = strpos( $final_tweet, 'WPCampus ');
+				$first_wpcampus = strpos( $final_tweet, 'WPCampus' );
 				if ( false !== $first_wpcampus ) {
 					$final_tweet = substr_replace( $final_tweet, '#WPCampus', $first_wpcampus, strlen( 'WPCampus' ) );
 				}
