@@ -10,6 +10,11 @@
  * Domain Path:       /languages
  */
 
+/*
+ * @TODO:
+ *  - Add button to tweet immediately.
+ */
+
 defined( 'ABSPATH' ) or die();
 
 $plugin_dir = wpcampus_social_media()->get_plugin_dir();
