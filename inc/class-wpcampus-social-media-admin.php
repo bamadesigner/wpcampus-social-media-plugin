@@ -110,8 +110,8 @@ final class WPCampus_Social_Media_Admin {
 			case 'wpc_social':
 
 				// See if we have a Twitter and Facebook message.
-				$twitter_message  = get_post_meta( $post_id, 'wpc_twitter_message', true );
-				$facebook_message = get_post_meta( $post_id, 'wpc_facebook_message', true );
+				$twitter_message  = wpcampus_social_media()->get_custom_message_for_post( $post_id, 'twitter' );
+				$facebook_message = wpcampus_social_media()->get_custom_message_for_post( $post_id, 'facebook' );
 
 				$images_url = wpcampus_social_media()->get_plugin_url() . 'assets/images/';
 
@@ -213,11 +213,11 @@ final class WPCampus_Social_Media_Admin {
 			if ( $user_can_edit ) :
 
 				$max_twitter_length = ! empty( $max_message_length['twitter'] ) ? $max_message_length['twitter'] : 0;
-				$twitter_message    = get_post_meta( $post->ID, 'wpc_twitter_message', true );
+				$twitter_message    = wpcampus_social_media()->get_custom_message_for_post( $post->ID, 'twitter' );
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at %4$d characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>', $max_twitter_length ); ?></p>
-				<textarea required id="" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( strip_tags( $twitter_message ) ); ?></textarea>
+				<textarea required id="" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( $twitter_message ); ?></textarea>
 				<?php
 			endif;
 
@@ -246,11 +246,11 @@ final class WPCampus_Social_Media_Admin {
 			if ( $user_can_edit ) :
 
 				$max_facebook_length = ! empty( $max_message_length['facebook'] ) ? $max_message_length['facebook'] : 0;
-				$facebook_message    = get_post_meta( $post->ID, 'wpc_facebook_message', true );
+				$facebook_message    = wpcampus_social_media()->get_custom_message_for_post( $post->ID, 'facebook' );
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom %1$s message for this post. %2$sOur social media service will automatically add the link to the post AND will add the "%3$s" hashtag if you don\'t add it yourself.%4$s The max is set at %5$d characters.', 'wpcampus-social' ), 'Facebook', '<strong>', '#WPCampus', '</strong>', $max_facebook_length ); ?></p>
-				<textarea required id="" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( strip_tags( $facebook_message ) ); ?></textarea>
+				<textarea required id="" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( $facebook_message ); ?></textarea>
 				<?php
 			endif;
 

@@ -201,6 +201,35 @@ final class WPCampus_Social_Media {
 	}
 
 	/**
+	 * Return the custom message saved in our post meta.
+	 *
+	 * @args    $post_id - int - the post ID.
+	 * @args    $network - string - e.g. 'facebook' or 'twitter'.
+	 * @return  string - the custom message.
+	 */
+	public function get_custom_message_for_post( $post_id, $network ) {
+
+		switch( $network ) {
+			case 'twitter':
+				$message = get_post_meta( $post_id, 'wpc_twitter_message', true );
+				break;
+			case 'facebook':
+				$message = get_post_meta( $post_id, 'wpc_facebook_message', true );
+				break;
+			default:
+				$message = '';
+				break;
+		}
+
+		if ( empty( $message ) ) {
+			return '';
+		}
+
+		// Sanitize the message.
+		return strip_tags( $message );
+	}
+
+	/**
 	 * Returns the message that Revive Social
 	 * plugin generates for a post.
 	 *
