@@ -26,6 +26,10 @@ final class WPCampus_Social_Media_Admin {
 		// Add needed styles and scripts.
 		add_action( 'admin_enqueue_scripts', array( $plugin, 'enqueue_styles_scripts' ) );
 
+		// Add and populate custom columns.
+		add_filter( 'manage_posts_columns', array( $plugin, 'add_columns' ), 10, 2 );
+		add_action( 'manage_posts_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
+
 		// Add meta boxes.
 		add_action( 'add_meta_boxes', array( $plugin, 'add_meta_boxes' ) );
 
@@ -54,6 +58,85 @@ final class WPCampus_Social_Media_Admin {
 
 		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', array(), null );
 
+	}
+
+	/**
+	 * Add custom admin columns for profiles.
+	 *
+	 * @param   $columns - array - An array of column names.
+	 * @param   $post_type - string - The post type slug.
+	 * @return  array - the filtered columns.
+	 */
+	public function add_columns( $columns, $post_type ) {
+
+		// Only add to share post types.
+		if ( ! in_array( $post_type, wpcampus_social_media()->get_share_post_types() ) ) {
+			return $columns;
+		}
+
+		// Store new columns.
+		$new_columns = array();
+
+		$columns_to_add = array(
+			'wpc_social' => __( 'Social', 'wpcampus-social' ),
+		);
+
+		foreach ( $columns as $key => $value ) {
+
+			// Add existing column.
+			$new_columns[ $key ] = $value;
+
+			// Add custom columns after title.
+			if ( 'title' == $key ) {
+				foreach ( $columns_to_add as $column_key => $column_value ) {
+					$new_columns[ $column_key ] = $column_value;
+				}
+			}
+		}
+
+		return $new_columns;
+	}
+
+	/**
+	 * Populate our custom profile columns.
+	 *
+	 * @param   $column - string - The name of the column to display.
+	 * @param   $post_id - int - The current post ID.
+	 */
+	public function populate_columns( $column, $post_id ) {
+
+		switch ( $column ) {
+
+			case 'wpc_social':
+
+				// See if we have a Twitter and Facebook message.
+				$twitter_message  = get_post_meta( $post_id, 'wpc_twitter_message', true );
+				$facebook_message = get_post_meta( $post_id, 'wpc_facebook_message', true );
+
+				$images_url = wpcampus_social_media()->get_plugin_url() . 'assets/images/';
+
+				if ( ! empty( $twitter_message ) ) {
+					?>
+					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Twitter' ); ?>">
+					<?php
+				} else {
+					?>
+					<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), 'Twitter' ); ?></em></span>
+					<?php
+				}
+
+				if ( ! empty( $facebook_message ) ) {
+					?>
+					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Facebook' ); ?>">
+					<?php
+				} else {
+					?>
+					<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), 'Facebook' ); ?></em></span>
+					<?php
+				}
+
+				break;
+		}
 	}
 
 	/**

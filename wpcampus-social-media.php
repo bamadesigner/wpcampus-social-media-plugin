@@ -138,6 +138,10 @@ final class WPCampus_Social_Media {
 	/**
 	 * Get the share post types assigned
 	 * for the Revive Social plugin.
+	 *
+	 * @TODO:
+	 *   - look into usage of get_option()
+	 *     and see if I can cache.
 	 */
 	public function get_share_post_types() {
 		return get_option( 'top_opt_post_type' ) ?: array();
