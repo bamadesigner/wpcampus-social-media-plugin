@@ -132,7 +132,7 @@ final class WPCampus_Social_Media_Admin {
 
 				if ( ! empty( $twitter_message ) ) {
 					?>
-					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Twitter' ); ?>">
+					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Twitter' ); ?>" title="<?php esc_attr( $twitter_message ); ?>">
 					<?php
 				} else {
 					?>
@@ -142,7 +142,7 @@ final class WPCampus_Social_Media_Admin {
 
 				if ( ! empty( $facebook_message ) ) {
 					?>
-					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Facebook' ); ?>">
+					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Facebook' ); ?>" title="<?php esc_attr( $facebook_message ); ?>">
 					<?php
 				} else {
 					?>
