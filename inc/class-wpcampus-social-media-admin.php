@@ -352,7 +352,7 @@ final class WPCampus_Social_Media_Admin {
 				if ( isset( $_POST['wpc_twitter_message'] ) ) {
 
 					// Sanitize the value.
-					$message = sanitize_text_field( $_POST['wpc_twitter_message'] );
+					$message = trim( sanitize_text_field( $_POST['wpc_twitter_message'] ) );
 
 					// Trim to max length.
 					$max_message_length = wpcampus_social_media()->get_max_message_length( 'twitter' );
@@ -369,7 +369,7 @@ final class WPCampus_Social_Media_Admin {
 				if ( isset( $_POST['wpc_facebook_message'] ) ) {
 
 					// Sanitize the value.
-					$message = sanitize_text_field( $_POST['wpc_facebook_message'] );
+					$message = trim( sanitize_text_field( $_POST['wpc_facebook_message'] ) );
 
 					// Trim to max length.
 					$max_message_length = wpcampus_social_media()->get_max_message_length( 'facebook' );
@@ -403,7 +403,7 @@ final class WPCampus_Social_Media_Admin {
 			 * This allows us to see our message as a preview
 			 * without actually editing the post meta table.
 			 */
-			$this->filter_message = $message;
+			$this->filter_message = trim( stripslashes( $message ) );
 
 			$this->print_social_media_edit_preview( get_post( $post_id ), $network );
 

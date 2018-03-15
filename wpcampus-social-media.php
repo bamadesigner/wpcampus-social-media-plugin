@@ -267,7 +267,7 @@ final class WPCampus_Social_Media {
 		}
 
 		// Sanitize the message.
-		return strip_tags( $message );
+		return trim( strip_tags( $message ) );
 	}
 
 	/**
