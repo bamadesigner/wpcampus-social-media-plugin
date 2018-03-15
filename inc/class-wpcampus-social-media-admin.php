@@ -237,21 +237,9 @@ final class WPCampus_Social_Media_Admin {
 			endif;
 
 			?>
-			<p id="wpcampus-social-preview-twitter" class="wpcampus-social-preview">
-				<?php
-
-				$tweet_info = wpcampus_social_media()->get_message_for_post( $post, 'twitter' );
-
-				if ( empty( $tweet_info['message'] ) ) :
-					?>
-					<em><?php _e( 'No tweet has been generated for this post.', 'wpcampus-social' ); ?></em>
-					<?php
-				else :
-					echo $tweet_info['message'];
-				endif;
-
-				?>
-			</p>
+			<div id="wpcampus-social-preview-twitter">
+				<?php $this->print_social_media_edit_preview( $post, 'twitter' ); ?>
+			</div>
 		</div>
 		<div class="wpcampus-social-preview-wrapper facebook">
 			<h3>Facebook</h3>
@@ -270,27 +258,63 @@ final class WPCampus_Social_Media_Admin {
 			endif;
 
 			?>
-			<p id="wpcampus-social-preview-facebook" class="wpcampus-social-preview">
-				<?php
-
-				$fb_info = wpcampus_social_media()->get_message_for_post( $post, 'facebook' );
-
-				if ( empty( $fb_info['message'] ) ) :
-					?>
-					<em><?php printf( __( 'No %s message has been generated for this post.', 'wpcampus-social' ), 'Facebook' ); ?></em>
-					<?php
-				else :
-					echo $fb_info['message'];
-				endif;
-
-				?>
-			</p>
+			<div id="wpcampus-social-preview-facebook">
+				<?php $this->print_social_media_edit_preview( $post, 'facebook' ); ?>
+			</div>
 		</div>
 		<?php
 
 		// Add a nonce field so we can check for it when saving the data.
 		wp_nonce_field( 'wpc_social_save_messages', 'wpc_social_save_messages_nonce' );
 
+	}
+
+	/**
+	 * Prints the HTML markup for social media previews in the admin.
+	 *
+	 * @args    $post - WP_Post - the post object.
+	 * @args    $network - string - e.g. 'facebook' or 'twitter'.
+	 * @return  void
+	 */
+	public function print_social_media_edit_preview( $post, $network ) {
+
+		$message_info = wpcampus_social_media()->get_message_for_post( $post, $network );
+
+		?>
+		<p class="wpcampus-social-preview">
+			<?php
+
+			if ( empty( $message_info['message'] ) ) :
+
+				if ( 'twitter' == $network ) :
+					?>
+					<em><?php _e( 'No tweet has been generated for this post.', 'wpcampus-social' ); ?></em>
+					<?php
+				elseif ( 'facebook' == $network ) :
+					?>
+					<em><?php printf( __( 'No %s message has been generated for this post.', 'wpcampus-social' ), 'Facebook' ); ?></em>
+					<?php
+				endif;
+			else :
+				echo $message_info['message'];
+			endif;
+
+			?>
+		</p>
+		<?php
+
+		if ( 'twitter' == $network ) :
+
+			$intent_url = wpcampus_social_media()->get_tweet_intent_url( array(
+				'text' => $message_info['message'],
+			));
+
+			if ( ! empty( $intent_url ) ) :
+				?>
+				<a class="wpcampus-social-button" target="_blank" href="<?php echo $intent_url; ?>"><?php _e( 'Open tweet in Twitter intent', 'wpcampus-social' ); ?></a>
+				<?php
+			endif;
+		endif;
 	}
 
 	/**
@@ -370,8 +394,6 @@ final class WPCampus_Social_Media_Admin {
 		$network = ! empty( $_GET['network'] ) ? $_GET['network'] : '';
 		$message = ! empty( $_GET['message'] ) ? strip_tags( $_GET['message'] ) : '';
 
-		$new_message = '';
-
 		// Return/echo the post message.
 		if ( $post_id > 0 && ! empty( $network ) && ! empty( $message ) ) {
 
@@ -383,13 +405,9 @@ final class WPCampus_Social_Media_Admin {
 			 */
 			$this->filter_message = $message;
 
-			$post_message = wpcampus_social_media()->get_message_for_post( get_post( $post_id ), $network );
-
-			$new_message = ! empty( $post_message['message'] ) ? $post_message['message'] : '';
+			$this->print_social_media_edit_preview( get_post( $post_id ), $network );
 
 		}
-
-		echo $new_message;
 
 		wp_die();
 	}

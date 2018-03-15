@@ -7,24 +7,19 @@ $bg-color: rgba($primary-color,0.05);
 		margin-top: 0;
 	}
 
+	*:last-child {
+		margin-bottom: 0;
+	}
+
 	.inside {
 		background: #fff;
 		margin: 0;
-		padding: 0 $inside-padding $inside-padding $inside-padding;
+		padding: 0 $inside-padding;
 	}
 
 	.wpcampus-social-pre {
 		margin: 0 ( 0 - $inside-padding );
 		padding: 20px $inside-padding;
-		border-bottom: 1px solid #eee;
-
-		*:first-child {
-			margin-top: 0;
-		}
-
-		*:last-child {
-			margin-bottom: 0;
-		}
 	}
 
 	h3 {
@@ -33,16 +28,30 @@ $bg-color: rgba($primary-color,0.05);
 	}
 
 	textarea {
+		display: block;
 		width: 100%;
 		padding: 10px;
 	}
 
+	.wpcampus-social-button {
+		display: block;
+		background: $primary-color;
+		color: #fff;
+		font-size: 110%;
+		font-weight: 600;
+		text-align: center;
+		padding: 15px 20px;
+		margin: 5px 0 0 0;
+	}
+
 	.wpcampus-social-preview-wrapper {
-		margin: 20px 0 0 0;
+		margin: 0 ( 0 - $inside-padding );
+		padding: 20px $inside-padding;
+		border-top: 1px solid #eee;
 
 		.wpcampus-social-preview {
 			padding: 20px;
-			margin: 0;
+			margin: 5px 0 0 0;
 		}
 
 		&.twitter {
