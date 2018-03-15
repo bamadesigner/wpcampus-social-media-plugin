@@ -65,6 +65,10 @@ final class WPCampus_Social_Media_Admin {
 
 		$share_post_types = wpcampus_social_media()->get_share_post_types();
 
+		if ( empty( $share_post_types ) ) {
+			return;
+		}
+
 		// Add meta box for social media posts.
 		add_meta_box( 'wpcampus-social-mb',
 			sprintf( __( '%s: Social Media', 'wpcampus-social' ), 'WPCampus' ),
@@ -105,6 +109,8 @@ final class WPCampus_Social_Media_Admin {
 
 		$user_can_edit = current_user_can( wpcampus_social_media()->get_user_cap_string() );
 
+		$max_message_length = $user_can_edit ? wpcampus_social_media()->get_max_message_length() : array();
+
 		if ( $user_can_edit ) :
 			?>
 			<div class="wpcampus-social-pre"><p><em><?php _e( 'The following allows you to compose and preview the social media message that will be shared for this content. Another plugin will automatically schedule the post.', 'wpcampus-social' ); ?></em></p></div>
@@ -120,19 +126,15 @@ final class WPCampus_Social_Media_Admin {
 			<h3>Twitter</h3>
 			<?php
 
-			if ( $user_can_edit ) :
-				?>
-				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at 280 characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>' ); ?></p>
-				<?php
-			endif;
-
 			// Only those with the capabilities can edit social information.
 			if ( $user_can_edit ) :
 
-				$tweet_message = get_post_meta( $post->ID, 'wpc_tweet_message', true );
+				$max_twitter_length = ! empty( $max_message_length['twitter'] ) ? $max_message_length['twitter'] : 0;
+				$twitter_message    = get_post_meta( $post->ID, 'wpc_twitter_message', true );
 
 				?>
-				<textarea id="" name="wpc_tweet_message" placeholder="" rows="4" maxlength="280"><?php echo esc_textarea( strip_tags( $tweet_message ) ); ?></textarea>
+				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at %4$d characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>', $max_twitter_length ); ?></p>
+				<textarea required id="" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( strip_tags( $twitter_message ) ); ?></textarea>
 				<?php
 			endif;
 
@@ -157,19 +159,15 @@ final class WPCampus_Social_Media_Admin {
 			<h3>Facebook</h3>
 			<?php
 
-			if ( $user_can_edit ) :
-				?>
-				<p><?php printf( __( 'Use this field to write a custom %s message for this post.', 'wpcampus-social' ), 'Facebook' ); ?></p>
-				<?php
-			endif;
-
 			// Only those with the capabilities can edit social information.
 			if ( $user_can_edit ) :
 
-				$fb_message = get_post_meta( $post->ID, 'wpc_fb_message', true );
+				$max_facebook_length = ! empty( $max_message_length['facebook'] ) ? $max_message_length['facebook'] : 0;
+				$facebook_message    = get_post_meta( $post->ID, 'wpc_facebook_message', true );
 
 				?>
-				<textarea id="" name="wpc_fb_message" placeholder="" rows="4" maxlength="280"><?php echo esc_textarea( strip_tags( $fb_message ) ); ?></textarea>
+				<p><?php printf( __( 'Use this field to write a custom %1$s message for this post. %2$sOur social media service will automatically add the link to the post AND will add the "%3$s" hashtag if you don\'t add it yourself.%4$s The max is set at %5$d characters.', 'wpcampus-social' ), 'Facebook', '<strong>', '#WPCampus', '</strong>', $max_facebook_length ); ?></p>
+				<textarea required id="" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( strip_tags( $facebook_message ) ); ?></textarea>
 				<?php
 			endif;
 
@@ -229,27 +227,36 @@ final class WPCampus_Social_Media_Admin {
 			if ( wp_verify_nonce( $_POST['wpc_social_save_messages_nonce'], 'wpc_social_save_messages' ) ) {
 
 				// Update the Twitter data.
-				if ( isset( $_POST['wpc_tweet_message'] ) ) {
+				if ( isset( $_POST['wpc_twitter_message'] ) ) {
 
 					// Sanitize the value.
-					$message = sanitize_text_field( $_POST['wpc_tweet_message'] );
+					$message = sanitize_text_field( $_POST['wpc_twitter_message'] );
 
 					// Trim to max length.
-					$message = substr( $message, 0, 280 );
+					$max_message_length = wpcampus_social_media()->get_max_message_length( 'twitter' );
+					if ( $max_message_length > 0 ) {
+						$message = substr( $message, 0, $max_message_length );
+					}
 
 					// Update/save value.
-					update_post_meta( $post_id, 'wpc_tweet_message', $message );
+					update_post_meta( $post_id, 'wpc_twitter_message', $message );
 
 				}
 
 				// Update the Facebook data.
-				if ( isset( $_POST['wpc_fb_message'] ) ) {
+				if ( isset( $_POST['wpc_facebook_message'] ) ) {
 
 					// Sanitize the value.
-					$message = sanitize_text_field( $_POST['wpc_fb_message'] );
+					$message = sanitize_text_field( $_POST['wpc_facebook_message'] );
+
+					// Trim to max length.
+					$max_message_length = wpcampus_social_media()->get_max_message_length( 'facebook' );
+					if ( $max_message_length > 0 ) {
+						$message = substr( $message, 0, $max_message_length );
+					}
 
 					// Update/save value.
-					update_post_meta( $post_id, 'wpc_fb_message', $message );
+					update_post_meta( $post_id, 'wpc_facebook_message', $message );
 
 				}
 			}

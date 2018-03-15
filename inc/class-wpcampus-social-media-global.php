@@ -47,16 +47,22 @@ final class WPCampus_Social_Media_Global {
 	 * saved from the plugin to change the max tweet length from
 	 * 140 to 280.
 	 *
-	 * We have post meta named "wpc_tweet_message" that is
+	 * We have post meta named "wpc_twitter_message" that is
 	 * added to posts to give us a space to compose a custom tweet.
 	 *
 	 * Below, we automatically add the "#WPCampus" hashtag if not
 	 * included in the custom tweet.
 	 */
-	public function override_old_post_tweet( $final_tweet, $post, $network ) {
+	public function override_old_post_tweet( $final_tweet, $post, $network = '' ) {
+
+		/*
+		 * If no network is passed, set to Twitter
+		 * since this argument was a hack anyway.
+		 */
+		$network = $network ?: 'twitter';
 
 		$current_tweet_length = strlen( $final_tweet );
-		$tweet_max_length = 'facebook' == $network ? 320 : 280;
+		$tweet_max_length = wpcampus_social_media()->get_max_message_length( $network );
 		$ellipses = '...';
 
 		// A URL of any length will be altered to 23 characters.

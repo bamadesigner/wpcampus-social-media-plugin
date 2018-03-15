@@ -140,7 +140,60 @@ final class WPCampus_Social_Media {
 	 * for the Revive Social plugin.
 	 */
 	public function get_share_post_types() {
-		return get_option( 'top_opt_post_type' );
+		return get_option( 'top_opt_post_type' ) ?: array();
+	}
+
+	/**
+	 * Get the max message length depending on network.
+	 *
+	 * If no network is passed, will get max lengths
+	 * for all networks.
+	 *
+	 * @args    $network - e.g. 'facebook' or 'twitter'.
+	 * @return  int|array - if network, returns length for network. Array of all otherwise.
+	 */
+	public function get_max_message_length( $network = '' ) {
+
+		// Holds the default numbers.
+		$allowed_networks = array(
+			'facebook' => 400,
+			'twitter'  => 280,
+		);
+
+		// Get the data stored by Revive Social plugin.
+		$formats = get_option( 'top_opt_post_formats' );
+
+		if ( ! empty( $network ) ) {
+
+			if ( ! empty( $allowed_networks[ $network ] ) ) {
+
+				// Return length stored in options.
+				if ( ! empty( $formats[ $network . '_top_opt_tweet_length'] ) ) {
+					return (int) $formats[ $network . '_top_opt_tweet_length' ];
+				}
+
+				// If no set length in options, return default length.
+				return (int) $allowed_networks[ $network ];
+			}
+
+			return 0;
+		}
+
+		// If no specific network, get all of them.
+		$max_lengths = array();
+
+		foreach( $allowed_networks as $network_key => $network_length ) {
+
+			// Set length stored in options.
+			if ( ! empty( $formats[ $network_key . '_top_opt_tweet_length'] ) ) {
+				$max_lengths[ $network_key ] = (int) $formats[ $network_key . '_top_opt_tweet_length' ];
+			}
+
+			// If no set length in options, set default length.
+			$max_lengths[ $network_key ] = (int) $network_length;
+		}
+
+		return $max_lengths;
 	}
 
 	/**
