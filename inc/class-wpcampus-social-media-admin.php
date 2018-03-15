@@ -219,6 +219,8 @@ final class WPCampus_Social_Media_Admin {
 			<?php
 		endif;
 
+		$a11y_message = sprintf( __( '%1$sFor accessibility:%2$s be mindful of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content.', 'wpcampus-social' ), '<strong>', '</strong>' );
+
 		?>
 		<div class="wpcampus-social-preview-wrapper twitter">
 			<h3>Twitter</h3>
@@ -232,6 +234,7 @@ final class WPCampus_Social_Media_Admin {
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at %4$d characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>', $max_twitter_length ); ?></p>
+				<p class="highlight"><?php echo $a11y_message; ?></p>
 				<textarea required class="wpcampus-social-update" data-network="twitter" data-preview="wpcampus-social-preview-twitter" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( $twitter_message ); ?></textarea>
 				<?php
 			endif;
@@ -253,6 +256,7 @@ final class WPCampus_Social_Media_Admin {
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom %1$s message for this post. %2$sOur social media service will automatically add the link to the post AND will add the "%3$s" hashtag if you don\'t add it yourself.%4$s The max is set at %5$d characters.', 'wpcampus-social' ), 'Facebook', '<strong>', '#WPCampus', '</strong>', $max_facebook_length ); ?></p>
+				<p class="highlight"><?php echo $a11y_message; ?></p>
 				<textarea required class="wpcampus-social-update" data-network="facebook" data-preview="wpcampus-social-preview-facebook" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( $facebook_message ); ?></textarea>
 				<?php
 			endif;

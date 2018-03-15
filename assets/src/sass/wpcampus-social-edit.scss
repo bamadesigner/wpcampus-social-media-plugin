@@ -27,6 +27,11 @@ $bg-color: rgba($primary-color,0.05);
 		margin: 15px 0 8px 0;
 	}
 
+	.highlight {
+		background: rgba(255,255,0,0.3);
+		padding: 10px;
+	}
+
 	textarea {
 		display: block;
 		width: 100%;
