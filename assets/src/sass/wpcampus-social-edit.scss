@@ -23,12 +23,13 @@ $bg-color: rgba($primary-color,0.05);
 	}
 
 	h3 {
+		font-size: 1.5em;
 		color: $primary-color;
 		margin: 15px 0 8px 0;
 	}
 
 	.highlight {
-		background: rgba(255,255,0,0.3);
+		background: rgba(255,255,0,0.2);
 		padding: 10px;
 	}
 
@@ -36,6 +37,16 @@ $bg-color: rgba($primary-color,0.05);
 		display: block;
 		width: 100%;
 		padding: 10px;
+	}
+
+	.wpcampus-social-textarea {
+		background: #f2f8f2;
+		margin: 0 ( 0 - $inside-padding );
+		padding: 20px $inside-padding;
+
+		.wpcampus-social-status {
+			font-weight: bold;
+		}
 	}
 
 	.wpcampus-social-button {
@@ -54,6 +65,17 @@ $bg-color: rgba($primary-color,0.05);
 		padding: 20px $inside-padding;
 		border-top: 1px solid #eee;
 
+		.wpcampus-social-preview-area {
+			margin: 17px 0 0 0;
+
+			h4 {
+				font-size: 1.1em;
+				color: #444;
+				text-transform: uppercase;
+				margin: 0;
+			}
+		}
+
 		.wpcampus-social-preview {
 			padding: 20px;
 			margin: 5px 0 0 0;
@@ -70,6 +92,13 @@ $bg-color: rgba($primary-color,0.05);
 
 			.wpcampus-social-preview {
 				background: $bg-color; //#f0f2f7;
+			}
+		}
+
+		&.excluded {
+
+			.wpcampus-social-textarea {
+				background: #faf2f2;
 			}
 		}
 	}

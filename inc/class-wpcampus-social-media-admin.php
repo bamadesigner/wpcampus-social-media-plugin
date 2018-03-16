@@ -221,9 +221,15 @@ final class WPCampus_Social_Media_Admin {
 
 		$a11y_message = sprintf( __( '%1$sFor accessibility:%2$s be mindful of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content.', 'wpcampus-social' ), '<strong>', '</strong>' );
 
+		$twitter_is_excluded  = wpcampus_social_media()->is_excluded_post( $post->ID, 'twitter' );
+		$facebook_is_excluded = wpcampus_social_media()->is_excluded_post( $post->ID, 'facebook' );
+
+		$twitter_label = 'Twitter';
+		$facebook_label = 'Facebook';
+
 		?>
-		<div class="wpcampus-social-preview-wrapper twitter">
-			<h3>Twitter</h3>
+		<div class="wpcampus-social-preview-wrapper twitter <?php echo $twitter_is_excluded ? 'excluded' : 'active' ; ?>">
+			<h3><?php echo $twitter_label; ?></h3>
 			<?php
 
 			// Only those with the capabilities can edit social information.
@@ -235,17 +241,30 @@ final class WPCampus_Social_Media_Admin {
 				?>
 				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at %4$d characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>', $max_twitter_length ); ?></p>
 				<p class="highlight"><?php echo $a11y_message; ?></p>
-				<textarea required class="wpcampus-social-update" data-network="twitter" data-preview="wpcampus-social-preview-twitter" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( $twitter_message ); ?></textarea>
+				<div class="wpcampus-social-textarea">
+					<p class="wpcampus-social-status">
+						<?php
+
+						if ( $twitter_is_excluded ) :
+							printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label );
+						else :
+							printf( __( 'This post is enabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label );
+						endif;
+
+						?>
+					</p>
+					<textarea required class="wpcampus-social-update" data-network="twitter" data-preview="wpcampus-social-preview-twitter" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( $twitter_message ); ?></textarea>
+				</div>
 				<?php
 			endif;
 
 			?>
-			<div id="wpcampus-social-preview-twitter">
+			<div id="wpcampus-social-preview-twitter" class="wpcampus-social-preview-area">
 				<?php $this->print_social_media_edit_preview( $post, 'twitter' ); ?>
 			</div>
 		</div>
-		<div class="wpcampus-social-preview-wrapper facebook">
-			<h3>Facebook</h3>
+		<div class="wpcampus-social-preview-wrapper facebook <?php echo $facebook_is_excluded ? 'excluded' : 'active' ; ?>">
+			<h3><?php echo $facebook_label; ?></h3>
 			<?php
 
 			// Only those with the capabilities can edit social information.
@@ -257,12 +276,25 @@ final class WPCampus_Social_Media_Admin {
 				?>
 				<p><?php printf( __( 'Use this field to write a custom %1$s message for this post. %2$sOur social media service will automatically add the link to the post AND will add the "%3$s" hashtag if you don\'t add it yourself.%4$s The max is set at %5$d characters.', 'wpcampus-social' ), 'Facebook', '<strong>', '#WPCampus', '</strong>', $max_facebook_length ); ?></p>
 				<p class="highlight"><?php echo $a11y_message; ?></p>
-				<textarea required class="wpcampus-social-update" data-network="facebook" data-preview="wpcampus-social-preview-facebook" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( $facebook_message ); ?></textarea>
+				<div class="wpcampus-social-textarea">
+					<p class="wpcampus-social-status">
+						<?php
+
+						if ( $facebook_is_excluded ) :
+							printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label );
+						else :
+							printf( __( 'This post is enabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label );
+						endif;
+
+						?>
+					</p>
+					<textarea required class="wpcampus-social-update" data-network="facebook" data-preview="wpcampus-social-preview-facebook" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( $facebook_message ); ?></textarea>
+				</div>
 				<?php
 			endif;
 
 			?>
-			<div id="wpcampus-social-preview-facebook">
+			<div id="wpcampus-social-preview-facebook" class="wpcampus-social-preview-area">
 				<?php $this->print_social_media_edit_preview( $post, 'facebook' ); ?>
 			</div>
 		</div>
@@ -285,6 +317,7 @@ final class WPCampus_Social_Media_Admin {
 		$message_info = wpcampus_social_media()->get_message_for_post( $post, $network );
 
 		?>
+		<h4><?php _e( 'Preview the share:', 'wpcampus-social' ); ?></h4>
 		<p class="wpcampus-social-preview">
 			<?php
 
@@ -315,7 +348,7 @@ final class WPCampus_Social_Media_Admin {
 
 			if ( ! empty( $intent_url ) ) :
 				?>
-				<a class="wpcampus-social-button" target="_blank" href="<?php echo $intent_url; ?>"><?php _e( 'Open tweet in Twitter intent', 'wpcampus-social' ); ?></a>
+				<a class="wpcampus-social-button" target="_blank" href="<?php echo $intent_url; ?>"><?php printf( __( 'Open tweet in %s intent', 'wpcampus-social' ), 'Twitter' ); ?></a>
 				<?php
 			endif;
 		endif;
