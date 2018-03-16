@@ -205,7 +205,7 @@ final class WPCampus_Social_Media_Admin {
 	 */
 	public function print_social_media_mb( $post ) {
 
-		$user_can_edit = current_user_can( wpcampus_social_media()->get_user_cap_string() );
+		$user_can_edit = current_user_can( wpcampus_social_media()->get_user_cap_manage_string() );
 
 		$max_message_length = $user_can_edit ? wpcampus_social_media()->get_max_message_length() : array();
 
@@ -375,7 +375,7 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		// Make sure user has the capability.
-		if ( ! current_user_can( wpcampus_social_media()->get_user_cap_string() ) ) {
+		if ( ! current_user_can( wpcampus_social_media()->get_user_cap_manage_string() ) ) {
 			return;
 		}
 

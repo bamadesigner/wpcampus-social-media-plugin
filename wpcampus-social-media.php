@@ -134,9 +134,10 @@ final class WPCampus_Social_Media {
 	}
 
 	/**
-	 * Return the user capability string.
+	 * Return the user capability
+	 * string to manage social media.
 	 */
-	public function get_user_cap_string() {
+	public function get_user_cap_manage_string() {
 		return 'wpc_manage_social_media';
 	}
 
@@ -250,7 +251,7 @@ final class WPCampus_Social_Media {
 	 */
 	public function get_custom_message_for_post( $post_id, $network ) {
 
-		switch( $network ) {
+		switch ( $network ) {
 			case 'twitter':
 				$message = get_post_meta( $post_id, 'wpc_twitter_message', true );
 				break;
