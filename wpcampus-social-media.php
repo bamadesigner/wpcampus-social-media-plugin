@@ -298,7 +298,7 @@ final class WPCampus_Social_Media {
 		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'getExcludedPosts' ) ) {
 			$excluded_posts = $CWP_TOP_Core->getExcludedPosts( $network );
 			if ( ! empty( $excluded_posts ) ) {
-				if ( ! is_array() ) {
+				if ( ! is_array( $excluded_posts ) ) {
 					$excluded_posts = explode( ',', $excluded_posts );
 				}
 				return array_map( 'intval', $excluded_posts );
