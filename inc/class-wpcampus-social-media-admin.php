@@ -224,11 +224,11 @@ final class WPCampus_Social_Media_Admin {
 		$twitter_is_excluded  = wpcampus_social_media()->is_excluded_post( $post->ID, 'twitter' );
 		$facebook_is_excluded = wpcampus_social_media()->is_excluded_post( $post->ID, 'facebook' );
 
-		$twitter_label = 'Twitter';
+		$twitter_label  = 'Twitter';
 		$facebook_label = 'Facebook';
 
 		?>
-		<div class="wpcampus-social-preview-wrapper twitter <?php echo $twitter_is_excluded ? 'excluded' : 'active' ; ?>">
+		<div class="wpcampus-social-preview-wrapper twitter <?php echo $twitter_is_excluded ? 'excluded' : 'active'; ?>">
 			<h3><?php echo $twitter_label; ?></h3>
 			<?php
 
@@ -263,7 +263,7 @@ final class WPCampus_Social_Media_Admin {
 				<?php $this->print_social_media_edit_preview( $post, 'twitter' ); ?>
 			</div>
 		</div>
-		<div class="wpcampus-social-preview-wrapper facebook <?php echo $facebook_is_excluded ? 'excluded' : 'active' ; ?>">
+		<div class="wpcampus-social-preview-wrapper facebook <?php echo $facebook_is_excluded ? 'excluded' : 'active'; ?>">
 			<h3><?php echo $facebook_label; ?></h3>
 			<?php
 
