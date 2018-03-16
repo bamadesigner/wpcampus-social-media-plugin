@@ -17,7 +17,7 @@ final class WPCampus_Social_Media_Global {
 	protected function __construct() {}
 
 	/**
-	 * Registers all of our hooks and what not.
+	 * Registers all of our hooks.
 	 */
 	public static function register() {
 		$plugin = new self();

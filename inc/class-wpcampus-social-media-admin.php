@@ -3,7 +3,7 @@
  * The class that powers admin functionality.
  *
  * This class is initiated on every page in the
- * load in the admin and does not have to be instantiated.
+ * admin and does not have to be instantiated.
  *
  * @class       WPCampus_Social_Media_Admin
  * @package     WPCampus Social Media
@@ -24,7 +24,7 @@ final class WPCampus_Social_Media_Admin {
 	protected function __construct() {}
 
 	/**
-	 * Registers all of our hooks and what not.
+	 * Registers all of our hooks.
 	 *
 	 * @return void
 	 */
