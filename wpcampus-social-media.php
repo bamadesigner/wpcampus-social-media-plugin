@@ -283,6 +283,38 @@ final class WPCampus_Social_Media {
 		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'generateTweetFromPost' ) ) {
 			return $CWP_TOP_Core->generateTweetFromPost( $post, $network );
 		}
+		return '';
+	}
+
+	/**
+	 * Returns the IDs of excluded posts.
+	 *
+	 * @args    $network - the social media network, e.g. "facebook" or "twitter".
+	 * @return  array - array of post IDs.
+	 */
+	public function get_excluded_posts( $network ) {
+		global $CWP_TOP_Core;
+		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'getExcludedPosts' ) ) {
+			$excluded_posts = $CWP_TOP_Core->getExcludedPosts( $network );
+			if ( ! empty( $excluded_posts ) ) {
+				if ( ! is_array() ) {
+					$excluded_posts = explode( ',', $excluded_posts );
+				}
+				return array_map( 'intval', $excluded_posts );
+			}
+		}
+		return array();
+	}
+
+	/**
+	 * Will return true if post is an
+	 * excluded post on a specific network.
+	 *
+	 * @args    $post_id - int - the post ID.
+	 * @args    $network  - string - e.g. 'facebook' or 'twitter'.
+	 */
+	public function is_excluded_post( $post_id, $network ) {
+		return in_array( $post_id, $this->get_excluded_posts( $network ) );
 	}
 }
 
