@@ -219,7 +219,7 @@ final class WPCampus_Social_Media_Admin {
 			<?php
 		endif;
 
-		$a11y_message = sprintf( __( '%1$sFor accessibility:%2$s be mindful of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content.', 'wpcampus-social' ), '<strong>', '</strong>' );
+		$content_message = sprintf( __( '%1$sBe mindful:%2$s of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content. Also, these tweets will be shared over and over again so think about past, present, and future tense.', 'wpcampus-social' ), '<strong>', '</strong>' );
 
 		$twitter_is_excluded  = wpcampus_social_media()->is_excluded_post( $post->ID, 'twitter' );
 		$facebook_is_excluded = wpcampus_social_media()->is_excluded_post( $post->ID, 'facebook' );
@@ -240,7 +240,7 @@ final class WPCampus_Social_Media_Admin {
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at %4$d characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>', $max_twitter_length ); ?></p>
-				<p class="highlight"><?php echo $a11y_message; ?></p>
+				<p class="highlight"><?php echo $content_message; ?></p>
 				<div class="wpcampus-social-textarea">
 					<p class="wpcampus-social-status">
 						<?php
@@ -275,7 +275,7 @@ final class WPCampus_Social_Media_Admin {
 
 				?>
 				<p><?php printf( __( 'Use this field to write a custom %1$s message for this post. %2$sOur social media service will automatically add the link to the post AND will add the "%3$s" hashtag if you don\'t add it yourself.%4$s The max is set at %5$d characters.', 'wpcampus-social' ), 'Facebook', '<strong>', '#WPCampus', '</strong>', $max_facebook_length ); ?></p>
-				<p class="highlight"><?php echo $a11y_message; ?></p>
+				<p class="highlight"><?php echo $content_message; ?></p>
 				<div class="wpcampus-social-textarea">
 					<p class="wpcampus-social-status">
 						<?php
