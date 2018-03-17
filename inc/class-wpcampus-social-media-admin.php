@@ -124,31 +124,60 @@ final class WPCampus_Social_Media_Admin {
 
 			case 'wpc_social':
 
+				$twitter_excluded = wpcampus_social_media()->is_excluded_post( $post_id, 'twitter' );
+				$facebook_excluded = wpcampus_social_media()->is_excluded_post( $post_id, 'facebook' );
+
+				if ( $twitter_excluded && $facebook_excluded ) :
+					?>
+					<span style="display:block;"><em><?php _e( 'This post is disabled for automatic sharing.', 'wpcampus-social' ); ?></em></span>
+					<?php
+					break;
+
+				endif;
+
 				// See if we have a Twitter and Facebook message.
 				$twitter_message  = wpcampus_social_media()->get_custom_message_for_post( $post_id, 'twitter' );
 				$facebook_message = wpcampus_social_media()->get_custom_message_for_post( $post_id, 'facebook' );
 
 				$images_url = wpcampus_social_media()->get_plugin_url() . 'assets/images/';
 
-				if ( ! empty( $twitter_message ) ) {
+				if ( ! empty( $twitter_message ) ) :
 					?>
-					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Twitter' ); ?>" title="<?php esc_attr( $twitter_message ); ?>">
+					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Twitter' ); ?>" title="<?php echo esc_attr( $twitter_message ); ?>">
 					<?php
-				} else {
-					?>
-					<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), 'Twitter' ); ?></em></span>
-					<?php
-				}
+				else :
 
-				if ( ! empty( $facebook_message ) ) {
+					$twitter_label = 'Twitter';
+
+					if ( $twitter_excluded ) :
+						?>
+						<span style="display:block;"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label ); ?></em></span>
+						<?php
+					else :
+						?>
+						<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), $twitter_label ); ?></em></span>
+						<?php
+					endif;
+				endif;
+
+				if ( ! empty( $facebook_message ) ) :
 					?>
-					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Facebook' ); ?>" title="<?php esc_attr( $facebook_message ); ?>">
+					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Facebook' ); ?>" title="<?php echo esc_attr( $facebook_message ); ?>">
 					<?php
-				} else {
-					?>
-					<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), 'Facebook' ); ?></em></span>
-					<?php
-				}
+				else :
+
+					$facebook_label = 'Facebook';
+
+					if ( $facebook_excluded ) :
+						?>
+						<span style="display:block;"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label ); ?></em></span>
+						<?php
+					else :
+						?>
+						<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), $facebook_label ); ?></em></span>
+						<?php
+					endif;
+				endif;
 
 				break;
 		}
