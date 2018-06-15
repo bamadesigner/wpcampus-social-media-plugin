@@ -343,6 +343,8 @@ final class WPCampus_Social_Media_Admin {
 	 */
 	public function print_social_media_edit_preview( $post, $network ) {
 
+		$user_can_share = current_user_can( wpcampus_social_media()->get_user_cap_share_string() );
+
 		$message_info = wpcampus_social_media()->get_message_for_post( $post, $network );
 
 		?>
@@ -369,17 +371,30 @@ final class WPCampus_Social_Media_Admin {
 		</p>
 		<?php
 
-		if ( 'twitter' == $network ) :
+		// Create buttons.
+		$buttons = array();
+
+		if ( 'twitter' == $network ) {
 
 			$intent_url = wpcampus_social_media()->get_tweet_intent_url( array(
 				'text' => $message_info['message'],
 			));
 
-			if ( ! empty( $intent_url ) ) :
-				?>
-				<a class="wpcampus-social-button" target="_blank" href="<?php echo $intent_url; ?>"><?php printf( __( 'Open tweet in %s intent', 'wpcampus-social' ), 'Twitter' ); ?></a>
-				<?php
-			endif;
+			if ( ! empty( $intent_url ) ) {
+				$buttons[] = '<a class="wpcampus-social-button" target="_blank" href="' . $intent_url . '">' . sprintf( __( 'Open tweet in %s intent', 'wpcampus-social' ), 'Twitter' ) . '</a>';
+			}
+		}
+
+		if ( $user_can_share ) {
+			$buttons[] = '<button class="wpcampus-social-button">' . __( 'Share this post now', 'wpcampus-social' ) . '</button>';
+		}
+
+		if ( ! empty( $buttons ) ) :
+			?>
+			<div class="wpcampus-social-buttons">
+				<?php echo implode( '', $buttons ); ?>
+			</div>
+			<?php
 		endif;
 	}
 
