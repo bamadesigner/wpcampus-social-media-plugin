@@ -32,29 +32,29 @@ final class WPCampus_Social_Media_Admin {
 		$plugin = new self();
 
 		// Add needed styles and scripts.
-		add_action( 'admin_enqueue_scripts', array( $plugin, 'enqueue_styles_scripts' ) );
+		//add_action( 'admin_enqueue_scripts', array( $plugin, 'enqueue_styles_scripts' ) );
 
 		// Add and populate custom columns.
-		add_filter( 'manage_posts_columns', array( $plugin, 'add_columns' ), 10, 2 );
-		add_action( 'manage_posts_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
+		//add_filter( 'manage_posts_columns', array( $plugin, 'add_columns' ), 10, 2 );
+		//add_action( 'manage_posts_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
 
 		// Add meta boxes.
-		add_action( 'add_meta_boxes', array( $plugin, 'add_meta_boxes' ) );
+		//add_action( 'add_meta_boxes', array( $plugin, 'add_meta_boxes' ) );
 
 		// Save meta box data.
-		add_action( 'save_post', array( $plugin, 'save_meta_boxes' ), 10, 3 );
+		//add_action( 'save_post', array( $plugin, 'save_meta_boxes' ), 10, 3 );
 
 		// Filter post meta for social update preview.
-		add_filter( 'get_post_metadata', array( $plugin, 'filter_post_meta' ), 10, 4 );
+		//add_filter( 'get_post_metadata', array( $plugin, 'filter_post_meta' ), 10, 4 );
 
 		// Add AJAX to update social previews.
-		add_action( 'wp_ajax_wpcampus_social_update_preview', array( $plugin, 'ajax_get_message_for_post' ) );
+		//add_action( 'wp_ajax_wpcampus_social_update_preview', array( $plugin, 'ajax_get_message_for_post' ) );
 
 	}
 
 	/**
 	 * Enqueue admin styles and scripts.
-	 */
+
 	public function enqueue_styles_scripts( $hook ) {
 		global $post_type;
 
@@ -73,7 +73,7 @@ final class WPCampus_Social_Media_Admin {
 		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', array(), null );
 		wp_enqueue_script( 'wpcampus-social-edit', $assets_url . 'js/wpcampus-social-edit.min.js', array( 'jquery' ), null, true );
 
-	}
+	}*/
 
 	/**
 	 * Add custom admin columns for profiles.
@@ -81,7 +81,7 @@ final class WPCampus_Social_Media_Admin {
 	 * @param   $columns - array - An array of column names.
 	 * @param   $post_type - string - The post type slug.
 	 * @return  array - the filtered columns.
-	 */
+
 	public function add_columns( $columns, $post_type ) {
 
 		// Only add to share post types.
@@ -110,14 +110,14 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		return $new_columns;
-	}
+	}*/
 
 	/**
 	 * Populate our custom profile columns.
 	 *
 	 * @param   $column - string - The name of the column to display.
 	 * @param   $post_id - int - The current post ID.
-	 */
+
 	public function populate_columns( $column, $post_id ) {
 
 		switch ( $column ) {
@@ -181,13 +181,13 @@ final class WPCampus_Social_Media_Admin {
 
 				break;
 		}
-	}
+	}*/
 
 	/**
 	 * Add our various admin meta boxes.
 	 *
 	 * @return  void
-	 */
+
 	public function add_meta_boxes() {
 
 		$share_post_types = wpcampus_social_media()->get_share_post_types();
@@ -204,7 +204,7 @@ final class WPCampus_Social_Media_Admin {
 			'normal',
 			'high'
 		);
-	}
+	}*/
 
 	/**
 	 * Print our meta boxes.
@@ -212,14 +212,14 @@ final class WPCampus_Social_Media_Admin {
 	 * @param   array - $post - information about the current post, which is empty because there is no current post on a tools page
 	 * @param   array - $metabox - information about the metabox
 	 * @return  void
-	 */
+
 	public function print_meta_boxes( $post, $metabox ) {
 		switch ( $metabox['id'] ) {
 			case 'wpcampus-social-mb':
 				$this->print_social_media_mb( $post );
 				break;
 		}
-	}
+	}*/
 
 	/**
 	 * Print the social media meta box.
@@ -231,7 +231,7 @@ final class WPCampus_Social_Media_Admin {
 	 *
 	 * @args    $post - the post object.
 	 * @return  void
-	 */
+
 	public function print_social_media_mb( $post ) {
 
 		$user_can_edit = current_user_can( wpcampus_social_media()->get_user_cap_manage_string() );
@@ -332,7 +332,7 @@ final class WPCampus_Social_Media_Admin {
 		// Add a nonce field so we can check for it when saving the data.
 		wp_nonce_field( 'wpc_social_save_messages', 'wpc_social_save_messages_nonce' );
 
-	}
+	}*/
 
 	/**
 	 * Prints the HTML markup for social media previews in the admin.
@@ -340,7 +340,7 @@ final class WPCampus_Social_Media_Admin {
 	 * @args    $post - WP_Post - the post object.
 	 * @args    $network - string - e.g. 'facebook' or 'twitter'.
 	 * @return  void
-	 */
+
 	public function print_social_media_edit_preview( $post, $network ) {
 
 		$user_can_share = current_user_can( wpcampus_social_media()->get_user_cap_share_string() );
@@ -396,7 +396,7 @@ final class WPCampus_Social_Media_Admin {
 			</div>
 			<?php
 		endif;
-	}
+	}*/
 
 	/**
 	 * When the post is saved, saves our custom meta box data.
@@ -405,7 +405,7 @@ final class WPCampus_Social_Media_Admin {
 	 * @param   WP_Post - $post - the post object
 	 * @param   bool - $update - whether this is an existing post being updated or not
 	 * @return  void
-	 */
+
 	function save_meta_boxes( $post_id, $post, $update ) {
 
 		// Disregard on autosave.
@@ -464,11 +464,11 @@ final class WPCampus_Social_Media_Admin {
 				}
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * Return/print the message for a post via AJAX.
-	 */
+
 	public function ajax_get_message_for_post() {
 
 		$post_id = ! empty( $_GET['post_id'] ) ? (int) $_GET['post_id'] : 0;
@@ -478,12 +478,12 @@ final class WPCampus_Social_Media_Admin {
 		// Return/echo the post message.
 		if ( $post_id > 0 && ! empty( $network ) && ! empty( $message ) ) {
 
-			/*
+			*//*
 			 * Store our new message for the filter to pick up.
 			 *
 			 * This allows us to see our message as a preview
 			 * without actually editing the post meta table.
-			 */
+			 *//*
 			$this->filter_message = trim( stripslashes( $message ) );
 
 			$this->print_social_media_edit_preview( get_post( $post_id ), $network );
@@ -491,7 +491,7 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		wp_die();
-	}
+	}*/
 
 	/**
 	 * Filter post meta so we can intercept values
@@ -503,7 +503,7 @@ final class WPCampus_Social_Media_Admin {
 	 * @param   $meta_key - string - Meta key.
 	 * @param   $single - bool - Whether to return only the first value of the specified $meta_key.
 	 * @return  string - the filtered value.
-	 */
+
 	public function filter_post_meta( $value, $object_id, $meta_key, $single ) {
 
 		// We only want to filter our meta.
@@ -517,6 +517,6 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		return $value;
-	}
+	}*/
 }
 WPCampus_Social_Media_Admin::register();

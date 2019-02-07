@@ -153,7 +153,7 @@ final class WPCampus_Social_Media {
 
 	/**
 	 * @return DateTimeZone
-	 */
+
 	public function get_site_timezone() {
 		if ( isset( $this->site_timezone ) ) {
 			return $this->site_timezone;
@@ -165,14 +165,14 @@ final class WPCampus_Social_Media {
 		}
 
 		return $this->site_timezone = new DateTimeZone( $timezone );
-	}
+	}*/
 
 	/**
 	 * Return the format for a specific feed.
 	 *
 	 * @param $query - WP_Query object
 	 * @return string - the format.
-	 */
+
 	public function get_query_feed_format( $query ) {
 		switch ( $query->get( 'feed' ) ) {
 
@@ -184,25 +184,25 @@ final class WPCampus_Social_Media {
 		}
 
 		return '';
-	}
+	}*/
 
 	/**
 	 * Return an array of social media formats.
 	 *
 	 * @return array of formats
-	 */
+
 	public function get_social_media_formats() {
 		return $this->social_media_formats;
-	}
+	}*/
 
 	/**
 	 * Return an array of social media feeds.
 	 *
 	 * @return array of feeds
-	 */
+
 	public function get_social_feeds() {
 		return $this->social_feeds;
-	}
+	}*/
 
 	/**
 	 * Get a social media message
@@ -211,7 +211,7 @@ final class WPCampus_Social_Media {
 	 * @param $post_id - int - the post ID.
 	 * @param $format - string - the format name.
 	 * @return string - the message.
-	 */
+
 	public function get_social_media_message( $post_id, $format ) {
 
 		if ( ! in_array( $format, $this->get_social_media_formats() ) ) {
@@ -221,23 +221,23 @@ final class WPCampus_Social_Media {
 		$message = get_post_meta( $post_id, "{$format}_message", true );
 
 		return trim( apply_filters( 'wpcampus_social_message', $message, $post_id, $format ) );
-	}
+	}*/
 
 	/**
 	 * Return the user capability
 	 * string to manage social media.
-	 */
+
 	public function get_user_cap_manage_string() {
 		return 'wpc_manage_social_media';
-	}
+	}*/
 
 	/**
 	 * Return the user capability
 	 * string to share social media.
-	 */
+
 	public function get_user_cap_share_string() {
 		return 'wpc_share_social_media';
-	}
+	}*/
 
 	/**
 	 * Get the share post types assigned
@@ -246,17 +246,17 @@ final class WPCampus_Social_Media {
 	 * @TODO:
 	 *   - look into usage of get_option()
 	 *     and see if I can cache.
-	 */
+
 	public function get_share_post_types() {
 		return get_option( 'top_opt_post_type' ) ?: array();
-	}
+	}*/
 
 	/**
 	 * Creating tweet intent URL.
 	 *
 	 * @param   $args - array - the arguments for the URL.
 	 * @return  string - the URL.
-	 */
+
 	public function get_tweet_intent_url( $args ) {
 
 		// Build arguments.
@@ -285,7 +285,7 @@ final class WPCampus_Social_Media {
 		}
 
 		return add_query_arg( $final_args, 'https://twitter.com/intent/tweet' );
-	}
+	}*/
 
 	/**
 	 * Get the max message length depending on network.
@@ -295,7 +295,7 @@ final class WPCampus_Social_Media {
 	 *
 	 * @args    $network - e.g. 'facebook' or 'twitter'.
 	 * @return  int|array - if network, returns length for network. Array of all otherwise.
-	 */
+
 	public function get_max_message_length( $network = '' ) {
 
 		// Holds the default numbers.
@@ -338,7 +338,7 @@ final class WPCampus_Social_Media {
 		}
 
 		return $max_lengths;
-	}
+	}*/
 
 	/**
 	 * Return the custom message saved in our post meta.
@@ -346,7 +346,7 @@ final class WPCampus_Social_Media {
 	 * @args    $post_id - int - the post ID.
 	 * @args    $network - string - e.g. 'facebook' or 'twitter'.
 	 * @return  string - the custom message.
-	 */
+
 	public function get_custom_message_for_post( $post_id, $network ) {
 
 		switch ( $network ) {
@@ -367,7 +367,7 @@ final class WPCampus_Social_Media {
 
 		// Sanitize the message.
 		return trim( strip_tags( $message ) );
-	}
+	}*/
 
 	/**
 	 * Returns the message that Revive Social
@@ -376,21 +376,21 @@ final class WPCampus_Social_Media {
 	 * @args    $post - the post object.
 	 * @args    $network - the social media network, e.g. "facebook" or "twitter".
 	 * @return  array - info for the post, including link and message.
-	 */
+
 	public function get_message_for_post( $post, $network ) {
 		global $CWP_TOP_Core;
 		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'generateTweetFromPost' ) ) {
 			return $CWP_TOP_Core->generateTweetFromPost( $post, $network );
 		}
 		return '';
-	}
+	}*/
 
 	/**
 	 * Returns the IDs of excluded posts.
 	 *
 	 * @args    $network - the social media network, e.g. "facebook" or "twitter".
 	 * @return  array - array of post IDs.
-	 */
+
 	public function get_excluded_posts( $network ) {
 		global $CWP_TOP_Core;
 		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'getExcludedPosts' ) ) {
@@ -403,7 +403,7 @@ final class WPCampus_Social_Media {
 			}
 		}
 		return array();
-	}
+	}*/
 
 	/**
 	 * Will return true if post is an
@@ -411,17 +411,17 @@ final class WPCampus_Social_Media {
 	 *
 	 * @args    $post_id - int - the post ID.
 	 * @args    $network  - string - e.g. 'facebook' or 'twitter'.
-	 */
+
 	public function is_excluded_post( $post_id, $network ) {
 		return in_array( $post_id, $this->get_excluded_posts( $network ) );
-	}
+	}*/
 
 	/**
 	 * Shares a post on a social network immediately.
 	 *
 	 * @args    $post - WP_Post - the post object.
 	 * $args    $network - string - .e.g 'facebook' or 'twitter'.
-	 */
+
 	public function share_post( $post, $network ) {
 		global $CWP_TOP_Core;
 
@@ -441,5 +441,5 @@ final class WPCampus_Social_Media {
 
 		//$CWP_TOP_Core->tweetPost( $message, $network, $post );
 
-	}
+	}*/
 }
