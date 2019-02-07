@@ -36,6 +36,30 @@ final class WPCampus_Social_Media {
 	private $plugin_basename;
 
 	/**
+	 *
+	 */
+	private $site_timezone;
+
+	/**
+	 * The names of our social media formats.
+	 *
+	 * @var array
+	 */
+	private $social_media_formats = array(
+		'twitter',
+	);
+
+	/**
+	 * The names of our feeds.
+	 *
+	 * @var array
+	 */
+	private $social_feeds = array(
+		'feed/social',
+		'feed/social/twitter',
+	);
+
+	/**
 	 * Holds the class instance.
 	 *
 	 * @var WPCampus_Social_Media
@@ -125,6 +149,78 @@ final class WPCampus_Social_Media {
 		}
 		$this->plugin_basename = 'wpcampus-social-media-plugin/wpcampus-social-media.php';
 		return $this->plugin_basename;
+	}
+
+	/**
+	 * @return DateTimeZone
+	 */
+	public function get_site_timezone() {
+		if ( isset( $this->site_timezone ) ) {
+			return $this->site_timezone;
+		}
+
+		$timezone = get_option( 'timezone_string' );
+		if ( empty( $timezone ) ) {
+			$timezone = 'UTC';
+		}
+
+		return $this->site_timezone = new DateTimeZone( $timezone );
+	}
+
+	/**
+	 * Return the format for a specific feed.
+	 *
+	 * @param $query - WP_Query object
+	 * @return string - the format.
+	 */
+	public function get_query_feed_format( $query ) {
+		switch ( $query->get( 'feed' ) ) {
+
+			case 'feed/social':
+			case 'feed/social/twitter':
+				return 'twitter';
+				break;
+
+		}
+
+		return '';
+	}
+
+	/**
+	 * Return an array of social media formats.
+	 *
+	 * @return array of formats
+	 */
+	public function get_social_media_formats() {
+		return $this->social_media_formats;
+	}
+
+	/**
+	 * Return an array of social media feeds.
+	 *
+	 * @return array of feeds
+	 */
+	public function get_social_feeds() {
+		return $this->social_feeds;
+	}
+
+	/**
+	 * Get a social media message
+	 * depending on format.
+	 *
+	 * @param $post_id - int - the post ID.
+	 * @param $format - string - the format name.
+	 * @return string - the message.
+	 */
+	public function get_social_media_message( $post_id, $format ) {
+
+		if ( ! in_array( $format, $this->get_social_media_formats() ) ) {
+			return '';
+		}
+
+		$message = get_post_meta( $post_id, "{$format}_message", true );
+
+		return trim( apply_filters( 'wpcampus_social_message', $message, $post_id, $format ) );
 	}
 
 	/**

@@ -25,8 +25,14 @@ final class WPCampus_Social_Media_Global {
 		// Load our text domain.
 		add_action( 'plugins_loaded', array( $plugin, 'textdomain' ) );
 
+		// Register our social media feeds.
+		add_action( 'init', array( $plugin, 'add_feeds' ) );
+
 		// Filter the tweets.
 		add_filter( 'rop_override_tweet', array( $plugin, 'override_old_post_tweet' ), 10, 3 );
+
+		// Modify the query for our social feeds.
+		add_filter( 'posts_request', array( $plugin, 'modify_social_posts_request' ), 100, 2 );
 
 	}
 
@@ -36,6 +42,69 @@ final class WPCampus_Social_Media_Global {
 	 */
 	public function textdomain() {
 		load_plugin_textdomain( 'wpcampus-social', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	/**
+	 * Add our RSS feeds.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function add_feeds() {
+		foreach ( wpcampus_social_media()->get_social_feeds() as $feed ) {
+			add_feed( $feed, array( $this, 'print_social_feed' ) );
+		}
+	}
+
+	/**
+	 * Print our social media feeds.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function print_social_feed() {
+		require_once wpcampus_social_media()->get_plugin_dir() . 'inc/feed-social.php';
+	}
+
+	/**
+	 *
+	 */
+	public function modify_social_posts_request( $request, $query ) {
+		global $wpdb;
+
+		// Not in the admin.
+		if ( is_admin() ) {
+			return $request;
+		}
+
+
+		// Only for social feeds.
+		if ( ! $query->is_feed( wpcampus_social_media()->get_social_feeds() ) ) {
+			return $request;
+		}
+
+		// Get the current time.
+		$timezone = wpcampus_social_media()->get_site_timezone();
+		$current_time = new DateTime( 'now', $timezone );
+
+		// Get the timezone offset.
+		$current_time_offset = $current_time->getOffset();
+
+		// Get the difference in hours.
+		$timezone_offset_hours = ( abs( $current_time_offset ) / 60 ) / 60;
+		$timezone_offset_hours = ( $current_time_offset < 0 ) ? ( 0 - $timezone_offset_hours ) : $timezone_offset_hours;
+
+		return "SELECT posts.*,
+			message.meta_value AS social_message,
+			NOW() AS now,
+			STR_TO_DATE( CONCAT( sdate.meta_value, ' ', stime.meta_value), '%Y-%m-%d %H:%i:%s' ) AS event_start,
+			sdate.meta_value AS event_date,
+			stime.meta_value AS event_start_time
+			FROM {$wpdb->posts} posts
+			INNER JOIN {$wpdb->postmeta} message ON message.post_id = posts.ID AND message.meta_key = 'sws_meta_format' AND message.meta_value != ''
+			INNER JOIN {$wpdb->postmeta} sdate ON sdate.post_id = posts.ID AND sdate.meta_key = 'conf_sch_event_date' AND sdate.meta_value != ''
+			INNER JOIN {$wpdb->postmeta} stime ON stime.post_id = posts.ID AND stime.meta_key = 'conf_sch_event_start_time' AND stime.meta_value != ''
+			WHERE posts.post_type = 'schedule' AND posts.post_status = 'publish' AND DATE_ADD( NOW(), INTERVAL " . (int) $timezone_offset_hours . " HOUR ) < STR_TO_DATE( CONCAT( sdate.meta_value, ' ', stime.meta_value), '%Y-%m-%d %H:%i:%s' )";
 	}
 
 	/**
