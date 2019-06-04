@@ -64,7 +64,7 @@ final class WPCampus_Social_Media {
 	 *
 	 * @var array
 	 */
-	private $share_post_types = array( 'post', 'schedule', 'notification', 'podcast', 'resource' );
+	private $share_post_types = array( 'post', 'page', 'schedule', 'notification', 'podcast', 'resource' );
 
 	/**
 	 * The names of our social media platforms.
