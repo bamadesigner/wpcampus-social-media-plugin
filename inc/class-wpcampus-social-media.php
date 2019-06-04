@@ -9,16 +9,17 @@
  */
 final class WPCampus_Social_Media {
 
-	CONST FEED_QUERY_VAR = 'wpcampus_social_feed';
+	const FEED_QUERY_VAR = 'wpcampus_social_feed';
 
-	CONST FEED_DEFAULT = 'twitter';
+	const FEED_DEFAULT = 'twitter';
 
-	CONST META_KEY_SOCIAL_TWITTER = 'wpc_social_message_twitter';
-	CONST META_KEY_SOCIAL_FACEBOOK = 'wpc_social_message_facebook';
-	CONST META_KEY_SOCIAL_SLACK = 'wpc_social_message_slack';
 	const META_KEY_SOCIAL_DEACTIVATE = 'wpc_social_deactivate';
 
-	CONST USER_CAP_SOCIAL_SHARE = 'wpc_share_social_media';
+	const META_KEY_SOCIAL_MESSAGE_TWITTER = 'wpc_social_message_twitter';
+	const META_KEY_SOCIAL_MESSAGE_FACEBOOK = 'wpc_social_message_facebook';
+	const META_KEY_SOCIAL_MESSAGE_SLACK = 'wpc_social_message_slack';
+
+	const USER_CAP_SOCIAL_SHARE = 'wpc_share_social_media';
 
 	const FORMAT_DATE_TIME = 'Y-m-d H:i:s';
 
@@ -273,7 +274,6 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
-	public function get_meta_key_social( string $platform ) : string {
 	public function get_meta_key_social_deactivate() : string {
 		return self::META_KEY_SOCIAL_DEACTIVATE;
 	}
@@ -281,12 +281,13 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
+	public function get_meta_key_social_message( string $platform ) : string {
 		if ( 'twitter' == $platform ) {
-			return self::META_KEY_SOCIAL_TWITTER;
+			return self::META_KEY_SOCIAL_MESSAGE_TWITTER;
 		} elseif ( 'facebook' == $platform ) {
-			return self::META_KEY_SOCIAL_FACEBOOK;
+			return self::META_KEY_SOCIAL_MESSAGE_FACEBOOK;
 		} elseif ( 'slack' == $platform ) {
-			return self::META_KEY_SOCIAL_SLACK;
+			return self::META_KEY_SOCIAL_MESSAGE_SLACK;
 		}
 		return '';
 	}
@@ -294,22 +295,22 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
-	public function get_meta_key_social_twitter() {
-		return $this->get_meta_key_social( 'twitter' );
+	public function get_meta_key_social_message_twitter() {
+		return $this->get_meta_key_social_message( 'twitter' );
 	}
 
 	/**
 	 *
 	 */
-	public function get_meta_key_social_facebook() {
-		return $this->get_meta_key_social( 'facebook' );
+	public function get_meta_key_social_message_facebook() {
+		return $this->get_meta_key_social_message( 'facebook' );
 	}
 
 	/**
 	 *
 	 */
-	public function get_meta_key_social_slack() {
-		return $this->get_meta_key_social( 'slack' );
+	public function get_meta_key_social_message_slack() {
+		return $this->get_meta_key_social_message( 'slack' );
 	}
 
 	/**
@@ -487,11 +488,11 @@ final class WPCampus_Social_Media {
 		}
 
 		if ( 'twitter' == $platform ) {
-			$message = get_post_meta( $post_id, $this->get_meta_key_social_twitter(), true );
+			$message = get_post_meta( $post_id, $this->get_meta_key_social_message_twitter(), true );
 		} elseif ( 'facebook' == $platform ) {
-			$message = get_post_meta( $post_id, $this->get_meta_key_social_facebook(), true );
+			$message = get_post_meta( $post_id, $this->get_meta_key_social_message_facebook(), true );
 		} elseif ( 'slack' == $platform ) {
-			$message = get_post_meta( $post_id, $this->get_meta_key_social_slack(), true );
+			$message = get_post_meta( $post_id, $this->get_meta_key_social_message_slack(), true );
 		} else {
 			$message = '';
 		}
@@ -537,17 +538,17 @@ final class WPCampus_Social_Media {
 		}
 
 		if ( 'twitter' == $platform ) {
-			update_post_meta( $post_id, $this->get_meta_key_social_twitter(), $message );
+			update_post_meta( $post_id, $this->get_meta_key_social_message_twitter(), $message );
 			return true;
 		}
 
 		if ( 'facebook' == $platform ) {
-			update_post_meta( $post_id, $this->get_meta_key_social_facebook(), $message );
+			update_post_meta( $post_id, $this->get_meta_key_social_message_facebook(), $message );
 			return true;
 		}
 
 		if ( 'slack' == $platform ) {
-			update_post_meta( $post_id, $this->get_meta_key_social_slack(), $message );
+			update_post_meta( $post_id, $this->get_meta_key_social_message_slack(), $message );
 			return true;
 		}
 

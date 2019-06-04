@@ -385,8 +385,8 @@ final class WPCampus_Social_Media_Admin {
 
 		$wpc_social = $_POST[ self::POST_KEY_SOCIAL_MEDIA ];
 
-		$twitter_meta_key  = $this->helper->get_meta_key_social_twitter();
-		$facebook_meta_key = $this->helper->get_meta_key_social_facebook();
+		$twitter_meta_key  = $this->helper->get_meta_key_social_message_twitter();
+		$facebook_meta_key = $this->helper->get_meta_key_social_message_facebook();
 
 		// Update the Twitter data.
 		if ( isset( $wpc_social[ $twitter_meta_key ] ) ) {
