@@ -205,6 +205,11 @@ final class WPCampus_Social_Media_Global {
 	 */
 	public function filter_social_message( $message, $post_id, $platform ) {
 
+		// @TODO dont include if blank messages?
+		if ( empty( $message ) ) {
+			return $message;
+		}
+
 		$post = get_post( $post_id );
 
 		$current_tweet_length = strlen( $message );
