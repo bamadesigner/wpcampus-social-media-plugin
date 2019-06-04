@@ -60,9 +60,11 @@ final class WPCampus_Social_Media {
 	/**
 	 * @TODO needs setting
 	 *
+	 * @TODO add proposal but add filter so only for confirmed.
+	 *
 	 * @var array
 	 */
-	private $share_post_types = array( 'post', 'schedule', 'notification' );
+	private $share_post_types = array( 'post', 'schedule', 'notification', 'podcast', 'resource' );
 
 	/**
 	 * The names of our social media platforms.
