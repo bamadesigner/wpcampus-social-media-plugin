@@ -10,13 +10,19 @@
  */
 final class WPCampus_Social_Media_Admin {
 
+	CONST POST_KEY_SOCIAL_MEDIA = 'wpc_social_media';
+
 	/**
 	 * Holds a message for our post meta filter to pick up.
 	 *
 	 * This allows us to see our message as a preview
 	 * without actually editing the post meta table.
+	 *
+	 * @TODO add back when we want preview functionality.
 	 */
-	private $filter_message = '';
+	//private $filter_message = '';
+
+	private $helper;
 
 	/**
 	 * We don't need to instantiate this class.
@@ -31,23 +37,27 @@ final class WPCampus_Social_Media_Admin {
 	public static function register() {
 		$plugin = new self();
 
+		$plugin->helper = wpcampus_social_media();
+
 		// Add needed styles and scripts.
+		// @TODO add back when we want preview functionality.
 		//add_action( 'admin_enqueue_scripts', array( $plugin, 'enqueue_styles_scripts' ) );
 
 		// Add and populate custom columns.
-		//add_filter( 'manage_posts_columns', array( $plugin, 'add_columns' ), 10, 2 );
-		//add_action( 'manage_posts_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
+		add_filter( 'manage_posts_columns', array( $plugin, 'add_columns' ), 10, 2 );
+
+		add_action( 'manage_pages_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
+		add_action( 'manage_posts_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
 
 		// Add meta boxes.
+		// @TODO add back when we want preview functionality.
 		//add_action( 'add_meta_boxes', array( $plugin, 'add_meta_boxes' ) );
 
-		// Save meta box data.
+		// @TODO maybe remove since we replaced with ACF.
 		//add_action( 'save_post', array( $plugin, 'save_meta_boxes' ), 10, 3 );
 
-		// Filter post meta for social update preview.
-		//add_filter( 'get_post_metadata', array( $plugin, 'filter_post_meta' ), 10, 4 );
-
 		// Add AJAX to update social previews.
+		// @TODO add back when we want preview functionality.
 		//add_action( 'wp_ajax_wpcampus_social_update_preview', array( $plugin, 'ajax_get_message_for_post' ) );
 
 	}
@@ -64,11 +74,11 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		// And only for our post types.
-		if ( ! in_array( $post_type, wpcampus_social_media()->get_share_post_types() ) ) {
+		if ( ! in_array( $post_type, $this->helper->get_share_post_types() ) ) {
 			return;
 		}
 
-		$assets_url = wpcampus_social_media()->get_plugin_url() . 'assets/build/';
+		$assets_url = $this->helper->get_plugin_url() . 'assets/';
 
 		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', array(), null );
 		wp_enqueue_script( 'wpcampus-social-edit', $assets_url . 'js/wpcampus-social-edit.min.js', array( 'jquery' ), null, true );
@@ -81,11 +91,11 @@ final class WPCampus_Social_Media_Admin {
 	 * @param   $columns - array - An array of column names.
 	 * @param   $post_type - string - The post type slug.
 	 * @return  array - the filtered columns.
-
+	 */
 	public function add_columns( $columns, $post_type ) {
 
 		// Only add to share post types.
-		if ( ! in_array( $post_type, wpcampus_social_media()->get_share_post_types() ) ) {
+		if ( ! in_array( $post_type, $this->helper->get_share_post_types() ) ) {
 			return $columns;
 		}
 
@@ -110,22 +120,24 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		return $new_columns;
-	}*/
+	}
 
 	/**
 	 * Populate our custom profile columns.
 	 *
+	 * @TODO add Slack
+	 *
 	 * @param   $column - string - The name of the column to display.
 	 * @param   $post_id - int - The current post ID.
-
+	 */
 	public function populate_columns( $column, $post_id ) {
 
 		switch ( $column ) {
 
 			case 'wpc_social':
 
-				$twitter_excluded = wpcampus_social_media()->is_excluded_post( $post_id, 'twitter' );
-				$facebook_excluded = wpcampus_social_media()->is_excluded_post( $post_id, 'facebook' );
+				$twitter_excluded = $this->helper->is_excluded_post( $post_id, 'twitter' );
+				$facebook_excluded = $this->helper->is_excluded_post( $post_id, 'facebook' );
 
 				if ( $twitter_excluded && $facebook_excluded ) :
 					?>
@@ -136,10 +148,10 @@ final class WPCampus_Social_Media_Admin {
 				endif;
 
 				// See if we have a Twitter and Facebook message.
-				$twitter_message  = wpcampus_social_media()->get_custom_message_for_post( $post_id, 'twitter' );
-				$facebook_message = wpcampus_social_media()->get_custom_message_for_post( $post_id, 'facebook' );
+				$twitter_message  = $this->helper->get_social_media_message( $post_id, 'twitter' );
+				$facebook_message = $this->helper->get_social_media_message( $post_id, 'facebook' );
 
-				$images_url = wpcampus_social_media()->get_plugin_url() . 'assets/images/';
+				$images_url = $this->helper->get_plugin_url() . 'assets/images/';
 
 				if ( ! empty( $twitter_message ) ) :
 					?>
@@ -181,7 +193,7 @@ final class WPCampus_Social_Media_Admin {
 
 				break;
 		}
-	}*/
+	}
 
 	/**
 	 * Add our various admin meta boxes.
@@ -190,15 +202,15 @@ final class WPCampus_Social_Media_Admin {
 
 	public function add_meta_boxes() {
 
-		$share_post_types = wpcampus_social_media()->get_share_post_types();
+		$share_post_types = $this->helper->get_share_post_types();
 
 		if ( empty( $share_post_types ) ) {
 			return;
 		}
 
 		// Add meta box for social media posts.
-		add_meta_box( 'wpcampus-social-mb',
-			sprintf( __( '%s: Social Media', 'wpcampus-social' ), 'WPCampus' ),
+		add_meta_box( 'wpcampus-social-preview-mb',
+			sprintf( __( '%s: Social Media Preview', 'wpcampus-social' ), 'WPCampus' ),
 			array( $this, 'print_meta_boxes' ),
 			$share_post_types,
 			'normal',
@@ -215,8 +227,8 @@ final class WPCampus_Social_Media_Admin {
 
 	public function print_meta_boxes( $post, $metabox ) {
 		switch ( $metabox['id'] ) {
-			case 'wpcampus-social-mb':
-				$this->print_social_media_mb( $post );
+			case 'wpcampus-social-preview-mb':
+				$this->print_social_media_preview_mb( $post );
 				break;
 		}
 	}*/
@@ -229,142 +241,65 @@ final class WPCampus_Social_Media_Admin {
 	 *
 	 * The background colors are 8% of the main color.
 	 *
+	 * @TODO add Slack
+	 *
 	 * @args    $post - the post object.
 	 * @return  void
 
-	public function print_social_media_mb( $post ) {
+	public function print_social_media_preview_mb( $post ) {
 
-		$user_can_edit = current_user_can( wpcampus_social_media()->get_user_cap_manage_string() );
-
-		$max_message_length = $user_can_edit ? wpcampus_social_media()->get_max_message_length() : array();
-
-		if ( $user_can_edit ) :
-			?>
-			<div class="wpcampus-social-pre"><p><em><?php _e( 'The following allows you to compose and preview the social media message that will be shared for this content. Another plugin will automatically schedule the post.', 'wpcampus-social' ); ?></em></p></div>
-			<?php
-		else :
-			?>
-			<div class="wpcampus-social-pre"><p><em><?php _e( 'The following allows you to preview the social media posts that will be shared for this content. You must have specific user permissions to edit the messages. Another plugin will automatically schedule the post.', 'wpcampus-social' ); ?></em></p></div>
-			<?php
-		endif;
-
-		$content_message = sprintf( __( '%1$sBe mindful:%2$s of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content. Also, these tweets will be shared over and over again so think about past, present, and future tense.', 'wpcampus-social' ), '<strong>', '</strong>' );
-
-		$twitter_is_excluded  = wpcampus_social_media()->is_excluded_post( $post->ID, 'twitter' );
-		$facebook_is_excluded = wpcampus_social_media()->is_excluded_post( $post->ID, 'facebook' );
-
-		$twitter_label  = 'Twitter';
-		$facebook_label = 'Facebook';
+		$twitter_is_excluded  = $this->helper->is_excluded_post( $post->ID, 'twitter' );
+		$facebook_is_excluded = $this->helper->is_excluded_post( $post->ID, 'facebook' );
 
 		?>
 		<div class="wpcampus-social-preview-wrapper twitter <?php echo $twitter_is_excluded ? 'excluded' : 'active'; ?>">
-			<h3><?php echo $twitter_label; ?></h3>
-			<?php
-
-			// Only those with the capabilities can edit social information.
-			if ( $user_can_edit ) :
-
-				$max_twitter_length = ! empty( $max_message_length['twitter'] ) ? $max_message_length['twitter'] : 0;
-				$twitter_message    = wpcampus_social_media()->get_custom_message_for_post( $post->ID, 'twitter' );
-
-				?>
-				<p><?php printf( __( 'Use this field to write a custom tweet for this post. %1$sOur social media service will automatically add the link to the post AND will add the "%2$s" hashtag if you don\'t add it yourself.%3$s The max is set at %4$d characters.', 'wpcampus-social' ), '<strong>', '#WPCampus', '</strong>', $max_twitter_length ); ?></p>
-				<p class="highlight"><?php echo $content_message; ?></p>
-				<div class="wpcampus-social-textarea">
-					<p class="wpcampus-social-status">
-						<?php
-
-						if ( $twitter_is_excluded ) :
-							printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label );
-						else :
-							printf( __( 'This post is enabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label );
-						endif;
-
-						?>
-					</p>
-					<textarea required class="wpcampus-social-update" data-network="twitter" data-preview="wpcampus-social-preview-twitter" name="wpc_twitter_message" placeholder="" rows="4" maxlength="<?php echo $max_twitter_length; ?>"><?php echo esc_textarea( $twitter_message ); ?></textarea>
-				</div>
-				<?php
-			endif;
-
-			?>
+			<h3>Twitter</h3>
 			<div id="wpcampus-social-preview-twitter" class="wpcampus-social-preview-area">
 				<?php $this->print_social_media_edit_preview( $post, 'twitter' ); ?>
 			</div>
 		</div>
 		<div class="wpcampus-social-preview-wrapper facebook <?php echo $facebook_is_excluded ? 'excluded' : 'active'; ?>">
-			<h3><?php echo $facebook_label; ?></h3>
-			<?php
-
-			// Only those with the capabilities can edit social information.
-			if ( $user_can_edit ) :
-
-				$max_facebook_length = ! empty( $max_message_length['facebook'] ) ? $max_message_length['facebook'] : 0;
-				$facebook_message    = wpcampus_social_media()->get_custom_message_for_post( $post->ID, 'facebook' );
-
-				?>
-				<p><?php printf( __( 'Use this field to write a custom %1$s message for this post. %2$sOur social media service will automatically add the link to the post AND will add the "%3$s" hashtag if you don\'t add it yourself.%4$s The max is set at %5$d characters.', 'wpcampus-social' ), 'Facebook', '<strong>', '#WPCampus', '</strong>', $max_facebook_length ); ?></p>
-				<p class="highlight"><?php echo $content_message; ?></p>
-				<div class="wpcampus-social-textarea">
-					<p class="wpcampus-social-status">
-						<?php
-
-						if ( $facebook_is_excluded ) :
-							printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label );
-						else :
-							printf( __( 'This post is enabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label );
-						endif;
-
-						?>
-					</p>
-					<textarea required class="wpcampus-social-update" data-network="facebook" data-preview="wpcampus-social-preview-facebook" name="wpc_facebook_message" placeholder="" rows="4" maxlength="<?php echo $max_facebook_length; ?>"><?php echo esc_textarea( $facebook_message ); ?></textarea>
-				</div>
-				<?php
-			endif;
-
-			?>
+			<h3>Facebook</h3>
 			<div id="wpcampus-social-preview-facebook" class="wpcampus-social-preview-area">
 				<?php $this->print_social_media_edit_preview( $post, 'facebook' ); ?>
 			</div>
 		</div>
 		<?php
-
-		// Add a nonce field so we can check for it when saving the data.
-		wp_nonce_field( 'wpc_social_save_messages', 'wpc_social_save_messages_nonce' );
-
 	}*/
 
 	/**
 	 * Prints the HTML markup for social media previews in the admin.
 	 *
+	 * @TODO add Slack
+	 *
 	 * @args    $post - WP_Post - the post object.
-	 * @args    $network - string - e.g. 'facebook' or 'twitter'.
+	 * @args    $platform - string - e.g. 'facebook' or 'twitter'.
 	 * @return  void
 
-	public function print_social_media_edit_preview( $post, $network ) {
+	public function print_social_media_edit_preview( $post, $platform ) {
 
-		$user_can_share = current_user_can( wpcampus_social_media()->get_user_cap_share_string() );
+		$user_can_share = current_user_can( $this->helper->get_user_cap_share_string() );
 
-		$message_info = wpcampus_social_media()->get_message_for_post( $post, $network );
+		$message = $this->helper->get_social_media_message( $post->ID, $platform );
 
 		?>
 		<h4><?php _e( 'Preview the share:', 'wpcampus-social' ); ?></h4>
 		<p class="wpcampus-social-preview">
 			<?php
 
-			if ( empty( $message_info['message'] ) ) :
+			if ( empty( $message ) ) :
 
-				if ( 'twitter' == $network ) :
+				if ( 'twitter' == $platform ) :
 					?>
 					<em><?php _e( 'No tweet has been generated for this post.', 'wpcampus-social' ); ?></em>
 					<?php
-				elseif ( 'facebook' == $network ) :
+				elseif ( 'facebook' == $platform ) :
 					?>
 					<em><?php printf( __( 'No %s message has been generated for this post.', 'wpcampus-social' ), 'Facebook' ); ?></em>
 					<?php
 				endif;
 			else :
-				echo $message_info['message'];
+				echo $message;
 			endif;
 
 			?>
@@ -374,10 +309,10 @@ final class WPCampus_Social_Media_Admin {
 		// Create buttons.
 		$buttons = array();
 
-		if ( 'twitter' == $network ) {
+		if ( 'twitter' == $platform ) {
 
-			$intent_url = wpcampus_social_media()->get_tweet_intent_url( array(
-				'text' => $message_info['message'],
+			$intent_url = $this->helper->get_tweet_intent_url( array(
+				'text' => $message,
 			));
 
 			if ( ! empty( $intent_url ) ) {
@@ -401,6 +336,8 @@ final class WPCampus_Social_Media_Admin {
 	/**
 	 * When the post is saved, saves our custom meta box data.
 	 *
+	 * @TODO add Slack
+	 *
 	 * @param   int - $post_id - the ID of the post being saved
 	 * @param   WP_Post - $post - the post object
 	 * @param   bool - $update - whether this is an existing post being updated or not
@@ -419,50 +356,37 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		// Make sure user has the capability.
-		if ( ! current_user_can( wpcampus_social_media()->get_user_cap_manage_string() ) ) {
+		if ( ! current_user_can( $this->helper->get_user_cap_manage_string() ) ) {
 			return;
 		}
 
 		// Check if our nonce is set because the 'save_post' action can be triggered at other times.
-		if ( isset( $_POST['wpc_social_save_messages_nonce'] ) ) {
+		if ( ! isset( $_POST['wpc_social_save_messages_nonce'] ) ) {
+			return;
+		}
 
-			// Verify the nonce.
-			if ( wp_verify_nonce( $_POST['wpc_social_save_messages_nonce'], 'wpc_social_save_messages' ) ) {
+		// Verify the nonce.
+		if ( ! wp_verify_nonce( $_POST['wpc_social_save_messages_nonce'], 'wpc_social_save_messages' ) ) {
+			return;
+		}
 
-				// Update the Twitter data.
-				if ( isset( $_POST['wpc_twitter_message'] ) ) {
+		if ( ! isset( $_POST[ self::POST_KEY_SOCIAL_MEDIA ] ) ) {
+			return;
+		}
 
-					// Sanitize the value.
-					$message = trim( sanitize_text_field( $_POST['wpc_twitter_message'] ) );
+		$wpc_social = $_POST[ self::POST_KEY_SOCIAL_MEDIA ];
 
-					// Trim to max length.
-					$max_message_length = wpcampus_social_media()->get_max_message_length( 'twitter' );
-					if ( $max_message_length > 0 ) {
-						$message = substr( $message, 0, $max_message_length );
-					}
+		$twitter_meta_key  = $this->helper->get_meta_key_social_twitter();
+		$facebook_meta_key = $this->helper->get_meta_key_social_facebook();
 
-					// Update/save value.
-					update_post_meta( $post_id, 'wpc_twitter_message', $message );
+		// Update the Twitter data.
+		if ( isset( $wpc_social[ $twitter_meta_key ] ) ) {
+			$this->helper->update_social_media_message( $post_id, $wpc_social[ $twitter_meta_key ], 'twitter' );
+		}
 
-				}
-
-				// Update the Facebook data.
-				if ( isset( $_POST['wpc_facebook_message'] ) ) {
-
-					// Sanitize the value.
-					$message = trim( sanitize_text_field( $_POST['wpc_facebook_message'] ) );
-
-					// Trim to max length.
-					$max_message_length = wpcampus_social_media()->get_max_message_length( 'facebook' );
-					if ( $max_message_length > 0 ) {
-						$message = substr( $message, 0, $max_message_length );
-					}
-
-					// Update/save value.
-					update_post_meta( $post_id, 'wpc_facebook_message', $message );
-
-				}
-			}
+		// Update the Facebook data.
+		if ( isset( $wpc_social[ $facebook_meta_key ] ) ) {
+			$this->helper->update_social_media_message( $post_id, $wpc_social[ $facebook_meta_key ], 'facebook' );
 		}
 	}*/
 
@@ -472,11 +396,11 @@ final class WPCampus_Social_Media_Admin {
 	public function ajax_get_message_for_post() {
 
 		$post_id = ! empty( $_GET['post_id'] ) ? (int) $_GET['post_id'] : 0;
-		$network = ! empty( $_GET['network'] ) ? $_GET['network'] : '';
+		$platform = ! empty( $_GET['platform'] ) ? $_GET['platform'] : '';
 		$message = ! empty( $_GET['message'] ) ? strip_tags( $_GET['message'] ) : '';
 
 		// Return/echo the post message.
-		if ( $post_id > 0 && ! empty( $network ) && ! empty( $message ) ) {
+		if ( $post_id > 0 && ! empty( $platform ) && ! empty( $message ) ) {
 
 			*//*
 			 * Store our new message for the filter to pick up.
@@ -486,37 +410,11 @@ final class WPCampus_Social_Media_Admin {
 			 *//*
 			$this->filter_message = trim( stripslashes( $message ) );
 
-			$this->print_social_media_edit_preview( get_post( $post_id ), $network );
+			$this->print_social_media_edit_preview( get_post( $post_id ), $platform );
 
 		}
 
 		wp_die();
-	}*/
-
-	/**
-	 * Filter post meta so we can intercept values
-	 * for social update preview without actually
-	 * updating the post meta value in the DB.
-	 *
-	 * @param   $value - string - the meta value we're filtering.
-	 * @param   $object_id - int - Object ID.
-	 * @param   $meta_key - string - Meta key.
-	 * @param   $single - bool - Whether to return only the first value of the specified $meta_key.
-	 * @return  string - the filtered value.
-
-	public function filter_post_meta( $value, $object_id, $meta_key, $single ) {
-
-		// We only want to filter our meta.
-		if ( ! in_array( $meta_key, array( 'wpc_facebook_message', 'wpc_twitter_message' ) ) ) {
-			return $value;
-		}
-
-		// We only want to filter when have a message set.
-		if ( ! empty( $this->filter_message ) ) {
-			return $this->filter_message;
-		}
-
-		return $value;
 	}*/
 }
 WPCampus_Social_Media_Admin::register();

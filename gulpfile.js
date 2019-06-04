@@ -9,19 +9,19 @@ const sass = require('gulp-sass');
 
 // Define the source paths for each file type.
 const src = {
-	js: ['assets/src/js/*.js'],
-	sass: ['assets/src/sass/**/*']
+	js: ['assets/js/src/*.js'],
+	css: ['assets/css/src/**/*']
 };
 
 // Define the destination paths for each file type.
 const dest = {
-	js: 'assets/build/js',
-	sass: 'assets/build/css'
+	js: 'assets/js',
+	css: 'assets/css'
 };
 
 // Take care of SASS.
-gulp.task('sass', function() {
-	return gulp.src(src.sass)
+gulp.task('css', function() {
+	return gulp.src(src.css)
 		.pipe(sass({
 			outputStyle: 'expanded'
 		}).on('error', sass.logError))
@@ -36,8 +36,8 @@ gulp.task('sass', function() {
 		.pipe(rename({
 			suffix: '.min'
 		}))
-		.pipe(gulp.dest(dest.sass))
-		.pipe(notify('WPC Social Media SASS compiled'));
+		.pipe(gulp.dest(dest.css))
+		.pipe(notify('WPC Social Media CSS compiled'));
 });
 
 // Take care of JS.
@@ -55,12 +55,12 @@ gulp.task('js',function() {
 });
 
 // Compile all the things.
-gulp.task('compile',['sass','js']);
+gulp.task('compile',['css','js']);
 
 // I've got my eyes on you(r file changes).
 gulp.task('watch',function() {
 	gulp.watch(src.js,['js']);
-	gulp.watch(src.sass,['sass']);
+	gulp.watch(src.css,['css']);
 });
 
 // Let's get this party started.

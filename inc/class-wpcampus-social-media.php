@@ -9,6 +9,18 @@
  */
 final class WPCampus_Social_Media {
 
+	CONST FEED_QUERY_VAR = 'wpcampus_social_feed';
+
+	CONST FEED_DEFAULT = 'twitter';
+
+	CONST META_KEY_SOCIAL_TWITTER = 'wpc_social_message_twitter';
+	CONST META_KEY_SOCIAL_FACEBOOK = 'wpc_social_message_facebook';
+	CONST META_KEY_SOCIAL_SLACK = 'wpc_social_message_slack';
+
+	CONST USER_CAP_SOCIAL_SHARE = 'wpc_share_social_media';
+
+	const FORMAT_DATE_TIME = 'Y-m-d H:i:s';
+
 	/**
 	 * Holds the absolute URL to
 	 * the main plugin directory.
@@ -41,12 +53,26 @@ final class WPCampus_Social_Media {
 	private $site_timezone;
 
 	/**
-	 * The names of our social media formats.
+	 *
+	 */
+	private $user_cap_manage_social_media = 'wpc_manage_social_media';
+
+	/**
+	 * @TODO needs setting
 	 *
 	 * @var array
 	 */
-	private $social_media_formats = array(
+	private $share_post_types = array( 'post', 'schedule', 'notification' );
+
+	/**
+	 * The names of our social media platforms.
+	 *
+	 * @var array
+	 */
+	private $social_media_platforms = array(
 		'twitter',
+		'facebook',
+		'slack',
 	);
 
 	/**
@@ -57,6 +83,19 @@ final class WPCampus_Social_Media {
 	private $social_feeds = array(
 		'feed/social',
 		'feed/social/twitter',
+		'feed/social/facebook',
+		'feed/social/slack',
+	);
+
+	/**
+	 * @TODO needs setting
+	 *
+	 * @var array
+	 */
+	private $max_message_length = array(
+		'facebook' => 400,
+		'twitter'  => 280,
+		'slack'    => 0,
 	);
 
 	/**
@@ -151,112 +190,379 @@ final class WPCampus_Social_Media {
 		return $this->plugin_basename;
 	}
 
+	public function get_format_date_time() {
+		return self::FORMAT_DATE_TIME;
+	}
+
 	/**
 	 * @return DateTimeZone
+	 */
+	public function get_utc_timezone() {
+		return new DateTimeZone( 'UTC' );
+	}
 
-	public function get_site_timezone() {
+	/**
+	 * @return DateTimeZone
+	 */
+	public function get_site_timezone() : DateTimeZone {
 		if ( isset( $this->site_timezone ) ) {
 			return $this->site_timezone;
 		}
 
 		$timezone = get_option( 'timezone_string' );
+
 		if ( empty( $timezone ) ) {
 			$timezone = 'UTC';
 		}
 
 		return $this->site_timezone = new DateTimeZone( $timezone );
-	}*/
+	}
 
 	/**
-	 * Return the format for a specific feed.
+	 * Return the platform for a specific feed.
 	 *
 	 * @param $query - WP_Query object
-	 * @return string - the format.
+	 * @return string - the platform.
+	 */
+	public function get_query_feed_platform( $query ) {
 
-	public function get_query_feed_format( $query ) {
-		switch ( $query->get( 'feed' ) ) {
+		$feed = $query->get( $this->get_feed_query_var() );
 
-			case 'feed/social':
-			case 'feed/social/twitter':
-				return 'twitter';
-				break;
-
+		if ( ! in_array( $feed, $this->get_social_media_platforms() ) ) {
+			return $this->get_feed_default();
 		}
 
-		return '';
-	}*/
+		return $feed;
+	}
 
 	/**
-	 * Return an array of social media formats.
+	 * Return an array of social media platforms.
 	 *
-	 * @return array of formats
-
-	public function get_social_media_formats() {
-		return $this->social_media_formats;
-	}*/
+	 * @return array of platforms
+	 */
+	public function get_social_media_platforms() {
+		return $this->social_media_platforms;
+	}
 
 	/**
 	 * Return an array of social media feeds.
 	 *
 	 * @return array of feeds
-
+	 */
 	public function get_social_feeds() {
 		return $this->social_feeds;
-	}*/
+	}
 
 	/**
-	 * Get a social media message
-	 * depending on format.
 	 *
-	 * @param $post_id - int - the post ID.
-	 * @param $format - string - the format name.
-	 * @return string - the message.
+	 */
+	public function get_feed_query_var() {
+		return self::FEED_QUERY_VAR;
+	}
 
-	public function get_social_media_message( $post_id, $format ) {
+	/**
+	 *
+	 */
+	public function get_feed_default() {
+		return self::FEED_DEFAULT;
+	}
 
-		if ( ! in_array( $format, $this->get_social_media_formats() ) ) {
+	/**
+	 *
+	 */
+	public function get_meta_key_social( string $platform ) : string {
+		if ( 'twitter' == $platform ) {
+			return self::META_KEY_SOCIAL_TWITTER;
+		} elseif ( 'facebook' == $platform ) {
+			return self::META_KEY_SOCIAL_FACEBOOK;
+		} elseif ( 'slack' == $platform ) {
+			return self::META_KEY_SOCIAL_SLACK;
+		}
+		return '';
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_twitter() {
+		return $this->get_meta_key_social( 'twitter' );
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_facebook() {
+		return $this->get_meta_key_social( 'facebook' );
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_slack() {
+		return $this->get_meta_key_social( 'slack' );
+	}
+
+	/**
+	 *
+	 */
+	public function is_social_feed( WP_Query $query ) {
+		return (bool) $query->get( self::FEED_QUERY_VAR );
+	}
+
+	/**
+	 *
+	 */
+	public function get_social_feed( $platform ) {
+		global $wpdb;
+
+		if ( ! in_array( $platform, $this->get_social_media_platforms() ) ) {
+			return [];
+		}
+
+		$post_types = $this->get_share_post_types();
+
+		if ( empty( $post_types ) ) {
+			return [];
+		}
+
+		// Get the current time.
+		$timezone = $this->get_site_timezone();
+		$current_time = new DateTime( 'now', $timezone );
+
+		// Get the timezone offset.
+		$current_time_offset = (int) $current_time->getOffset();
+
+		// Get the difference in hours.
+		$timezone_offset_hours = ( abs( $current_time_offset ) / 60 ) / 60;
+		$timezone_offset_hours = ( $current_time_offset < 0 ) ? ( 0 - $timezone_offset_hours ) : $timezone_offset_hours;
+
+		$message_key = "wpc_social_message_{$platform}";
+
+		$plaform_key = 'wpc_social_platform';
+
+		$deactivate_key = 'wpc_social_deactivate';
+
+		$start_date_time_key = 'wpc_social_start_date_time';
+		$end_date_time_key = 'wpc_social_end_date_time';
+
+		// @TODO remember this?
+		//CONVERT( coalesce(end_date_time.meta_value, '2038-01-01 00:00:00'), DATETIME ) desc,
+
+		$query = "SELECT posts.ID, posts.message, deactivate.meta_value AS deactivate, start_date_time.meta_value AS start_date_time, end_date_time.meta_value AS end_date_time
+			FROM (
+			    SELECT posts.ID, posts.post_modified_gmt, message.meta_value AS message FROM {$wpdb->posts} posts
+			    INNER JOIN {$wpdb->postmeta} message ON message.post_id = posts.ID AND message.meta_key = '" . $message_key . "' AND message.meta_value != ''
+			    INNER JOIN {$wpdb->postmeta} platforms ON platforms.post_id = posts.ID AND platforms.meta_key = '" . $plaform_key . "' AND platforms.meta_value LIKE '%" . $platform . "%'
+			    WHERE posts.post_type IN ('" . implode( "','", $post_types ) . "') AND posts.post_status = 'publish'
+			) AS posts
+			LEFT JOIN {$wpdb->postmeta} deactivate ON deactivate.post_id = posts.ID AND deactivate.meta_key = '" . $deactivate_key . "'
+			LEFT JOIN {$wpdb->postmeta} start_date_time ON start_date_time.post_id = posts.ID AND start_date_time.meta_key = '" . $start_date_time_key . "'
+			LEFT JOIN {$wpdb->postmeta} end_date_time ON end_date_time.post_id = posts.ID AND end_date_time.meta_key = '" . $end_date_time_key . "'
+			WHERE ( deactivate.meta_value IS NULL OR deactivate.meta_value != '1' )
+				AND IF ( start_date_time.meta_value IS NOT NULL AND start_date_time.meta_value != '', CONVERT( start_date_time.meta_value, DATETIME ) <= DATE_ADD( NOW(), INTERVAL " . $timezone_offset_hours . " HOUR ), true )
+				AND IF ( end_date_time.meta_value IS NOT NULL AND end_date_time.meta_value != '', CONVERT( end_date_time.meta_value, DATETIME ) > DATE_ADD( NOW(), INTERVAL " . $timezone_offset_hours . " HOUR ), true )
+			ORDER BY posts.post_modified_gmt DESC";
+
+		$items = $wpdb->get_results( $query );
+
+		if ( empty( $items ) ) {
+			return [];
+		}
+
+		$feed_items = [];
+
+		$utc_timezone = $this->get_utc_timezone();
+		$now = new DateTime( 'now', $utc_timezone );
+
+		foreach ( $items as &$item ) {
+
+			$message = $this->filter_social_media_message( $item->message, $item->ID, $platform );
+
+			if ( empty( $message ) ) {
+				$message = null;
+			}
+
+			$start_date_time_str = $this->filter_social_media_start_date_time( (string) $item->start_date_time, $item->ID, $platform );
+
+			if ( empty( $start_date_time_str ) ) {
+				$start_date_time = null;
+			} elseif ( false === strtotime( $start_date_time_str ) ) {
+				$start_date_time = null;
+			} else {
+
+				$start_date_time = new DateTime( $start_date_time_str );
+				$start_date_time->setTimezone( $utc_timezone );
+
+				// This post is expired.
+				if ( $start_date_time > $now ) {
+					$start_date_time = null;
+					continue;
+				} else {
+					$start_date_time = $start_date_time->format( $this->get_format_date_time() );
+				}
+			}
+
+			$end_date_time_str = $this->filter_social_media_end_date_time( (string) $item->end_date_time, $item->ID, $platform );
+
+			if ( empty( $end_date_time_str ) ) {
+				$end_date_time = null;
+			} elseif ( false === strtotime( $end_date_time_str ) ) {
+				$end_date_time = null;
+			} else {
+
+				$end_date_time = new DateTime( $end_date_time_str );
+				$end_date_time->setTimezone( $utc_timezone );
+
+				// This post is expired.
+				if ( $end_date_time <= $now ) {
+					$end_date_time = null;
+					continue;
+				} else {
+					$end_date_time = $end_date_time->format( $this->get_format_date_time() );
+				}
+			}
+
+			$feed_items[] = [
+				'ID'        => $item->ID,
+				'active'    => empty( $item->deactivate ),
+				'message'   => $message,
+				'permalink' => get_permalink( $item->ID ),
+				'start'     => $start_date_time,
+				'end'       => $end_date_time,
+			];
+		}
+
+		return $feed_items;
+	}
+
+	private function sanitize_social_media_message( $message ) {
+		return trim( strip_tags( sanitize_text_field( $message ) ) );
+	}
+
+	/**
+	 *
+	 */
+	public function filter_social_media_message( string $message, int $post_id, string $platform ) : string {
+		return apply_filters( 'wpcampus_social_message', $message, $post_id, $platform );
+	}
+
+	/**
+	 *
+	 */
+	public function filter_social_media_start_date_time( string $start_date_time, int $post_id, string $platform ) : string {
+		return apply_filters( 'wpcampus_social_start_date_time', $start_date_time, $post_id, $platform );
+	}
+
+	/**
+	 *
+	 */
+	public function filter_social_media_end_date_time( string $end_date_time, int $post_id, string $platform ) : string {
+		return apply_filters( 'wpcampus_social_end_date_time', $end_date_time, $post_id, $platform );
+	}
+
+	/**
+	 *
+	 */
+	public function get_social_media_message_raw( int $post_id, string $platform ) : string {
+
+		if ( ! in_array( $platform, $this->get_social_media_platforms() ) ) {
 			return '';
 		}
 
-		$message = get_post_meta( $post_id, "{$format}_message", true );
+		if ( 'twitter' == $platform ) {
+			$message = get_post_meta( $post_id, $this->get_meta_key_social_twitter(), true );
+		} elseif ( 'facebook' == $platform ) {
+			$message = get_post_meta( $post_id, $this->get_meta_key_social_facebook(), true );
+		} elseif ( 'slack' == $platform ) {
+			$message = get_post_meta( $post_id, $this->get_meta_key_social_slack(), true );
+		} else {
+			$message = '';
+		}
 
-		return trim( apply_filters( 'wpcampus_social_message', $message, $post_id, $format ) );
-	}*/
+		// Sanitize the message.
+		return $this->sanitize_social_media_message( $message );
+	}
+
+	/**
+	 * Get a social media message depending on platform.
+	 *
+	 * @param $post_id - int - the post ID.
+	 * @param $platform - string - the platform name.
+	 *
+	 * @return string - the message.
+	 */
+	public function get_social_media_message( int $post_id, string $platform ) : string {
+
+		$message = $this->get_social_media_message_raw( $post_id, $platform );
+
+		$message = $this->filter_social_media_message( $message, $post_id, $platform );
+
+		// Sanitize the message.
+		return $this->sanitize_social_media_message( $message );
+	}
+
+	/**
+	 *
+	 */
+	public function update_social_media_message( int $post_id, string $message, string $platform ) : bool {
+
+		if ( ! in_array( $platform, $this->get_social_media_platforms() ) ) {
+			return false;
+		}
+
+		// Sanitize the value.
+		$message = $this->sanitize_social_media_message( $message );
+
+		// Trim to max length.
+		$max_message_length = $this->get_max_message_length( $platform );
+		if ( $max_message_length > 0 ) {
+			$message = substr( $message, 0, $max_message_length );
+		}
+
+		if ( 'twitter' == $platform ) {
+			update_post_meta( $post_id, $this->get_meta_key_social_twitter(), $message );
+			return true;
+		}
+
+		if ( 'facebook' == $platform ) {
+			update_post_meta( $post_id, $this->get_meta_key_social_facebook(), $message );
+			return true;
+		}
+
+		if ( 'slack' == $platform ) {
+			update_post_meta( $post_id, $this->get_meta_key_social_slack(), $message );
+			return true;
+		}
+
+		return false;
+	}
 
 	/**
 	 * Return the user capability
 	 * string to manage social media.
-
+	 */
 	public function get_user_cap_manage_string() {
-		return 'wpc_manage_social_media';
-	}*/
+		return $this->user_cap_manage_social_media;
+	}
 
 	/**
 	 * Return the user capability
 	 * string to share social media.
-
+	 */
 	public function get_user_cap_share_string() {
-		return 'wpc_share_social_media';
-	}*/
+		return self::USER_CAP_SOCIAL_SHARE;
+	}
 
-	/**
-	 * Get the share post types assigned
-	 * for the Revive Social plugin.
-	 *
-	 * @TODO:
-	 *   - look into usage of get_option()
-	 *     and see if I can cache.
-
-	public function get_share_post_types() {
-		return get_option( 'top_opt_post_type' ) ?: array();
-	}*/
+	public function get_share_post_types() : array {
+		return $this->share_post_types;
+	}
 
 	/**
 	 * Creating tweet intent URL.
 	 *
 	 * @param   $args - array - the arguments for the URL.
 	 * @return  string - the URL.
-
+	 */
 	public function get_tweet_intent_url( $args ) {
 
 		// Build arguments.
@@ -285,161 +591,64 @@ final class WPCampus_Social_Media {
 		}
 
 		return add_query_arg( $final_args, 'https://twitter.com/intent/tweet' );
-	}*/
+	}
 
 	/**
-	 * Get the max message length depending on network.
+	 * Get the max message length depending on platform.
 	 *
-	 * If no network is passed, will get max lengths
-	 * for all networks.
+	 * If no platform is passed, will get max lengths
+	 * for all platforms.
 	 *
-	 * @args    $network - e.g. 'facebook' or 'twitter'.
-	 * @return  int|array - if network, returns length for network. Array of all otherwise.
+	 * @args    $platform - e.g. 'facebook' or 'twitter'.
+	 * @return  int|array - if platform, returns length for platform. Array of all otherwise.
+	 */
+	public function get_max_message_length( $platform = '' ) {
 
-	public function get_max_message_length( $network = '' ) {
+		if ( ! empty( $platform ) ) {
 
-		// Holds the default numbers.
-		$allowed_networks = array(
-			'facebook' => 400,
-			'twitter'  => 280,
-		);
-
-		// Get the data stored by Revive Social plugin.
-		$formats = get_option( 'top_opt_post_formats' );
-
-		if ( ! empty( $network ) ) {
-
-			if ( ! empty( $allowed_networks[ $network ] ) ) {
-
-				// Return length stored in options.
-				if ( ! empty( $formats[ $network . '_top_opt_tweet_length' ] ) ) {
-					return (int) $formats[ $network . '_top_opt_tweet_length' ];
-				}
+			if ( ! empty( $this->max_message_length[ $platform ] ) ) {
 
 				// If no set length in options, return default length.
-				return (int) $allowed_networks[ $network ];
+				return (int) $this->max_message_length[ $platform ];
 			}
 
 			return 0;
 		}
 
-		// If no specific network, get all of them.
+		// If no specific platform, get all of them.
 		$max_lengths = array();
 
-		foreach ( $allowed_networks as $network_key => $network_length ) {
-
-			// Set length stored in options.
-			if ( ! empty( $formats[ $network_key . '_top_opt_tweet_length' ] ) ) {
-				$max_lengths[ $network_key ] = (int) $formats[ $network_key . '_top_opt_tweet_length' ];
-			}
+		foreach ( $this->max_message_length as $platform_key => $platform_length ) {
 
 			// If no set length in options, set default length.
-			$max_lengths[ $network_key ] = (int) $network_length;
+			$max_lengths[ $platform_key ] = (int) $platform_length;
 		}
 
 		return $max_lengths;
-	}*/
-
-	/**
-	 * Return the custom message saved in our post meta.
-	 *
-	 * @args    $post_id - int - the post ID.
-	 * @args    $network - string - e.g. 'facebook' or 'twitter'.
-	 * @return  string - the custom message.
-
-	public function get_custom_message_for_post( $post_id, $network ) {
-
-		switch ( $network ) {
-			case 'twitter':
-				$message = get_post_meta( $post_id, 'wpc_twitter_message', true );
-				break;
-			case 'facebook':
-				$message = get_post_meta( $post_id, 'wpc_facebook_message', true );
-				break;
-			default:
-				$message = '';
-				break;
-		}
-
-		if ( empty( $message ) ) {
-			return '';
-		}
-
-		// Sanitize the message.
-		return trim( strip_tags( $message ) );
-	}*/
-
-	/**
-	 * Returns the message that Revive Social
-	 * plugin generates for a post.
-	 *
-	 * @args    $post - the post object.
-	 * @args    $network - the social media network, e.g. "facebook" or "twitter".
-	 * @return  array - info for the post, including link and message.
-
-	public function get_message_for_post( $post, $network ) {
-		global $CWP_TOP_Core;
-		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'generateTweetFromPost' ) ) {
-			return $CWP_TOP_Core->generateTweetFromPost( $post, $network );
-		}
-		return '';
-	}*/
+	}
 
 	/**
 	 * Returns the IDs of excluded posts.
 	 *
-	 * @args    $network - the social media network, e.g. "facebook" or "twitter".
+	 * @TODO need to setup. Was using TOP plugin.
+	 *
+	 * @args    $platform - the social media platform, e.g. "facebook" or "twitter".
 	 * @return  array - array of post IDs.
-
-	public function get_excluded_posts( $network ) {
-		global $CWP_TOP_Core;
-		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'getExcludedPosts' ) ) {
-			$excluded_posts = $CWP_TOP_Core->getExcludedPosts( $network );
-			if ( ! empty( $excluded_posts ) ) {
-				if ( ! is_array( $excluded_posts ) ) {
-					$excluded_posts = explode( ',', $excluded_posts );
-				}
-				return array_map( 'intval', $excluded_posts );
-			}
-		}
+	 */
+	public function get_excluded_posts( $platform ) {
 		return array();
-	}*/
+	}
 
 	/**
 	 * Will return true if post is an
-	 * excluded post on a specific network.
+	 * excluded post on a specific platform.
+	 *
+	 * @TODO need to setup. Was using TOP plugin.
 	 *
 	 * @args    $post_id - int - the post ID.
-	 * @args    $network  - string - e.g. 'facebook' or 'twitter'.
-
-	public function is_excluded_post( $post_id, $network ) {
-		return in_array( $post_id, $this->get_excluded_posts( $network ) );
-	}*/
-
-	/**
-	 * Shares a post on a social network immediately.
-	 *
-	 * @args    $post - WP_Post - the post object.
-	 * $args    $network - string - .e.g 'facebook' or 'twitter'.
-
-	public function share_post( $post, $network ) {
-		global $CWP_TOP_Core;
-
-		if ( class_exists( 'CWP_TOP_Core' )
-		     || ! method_exists( $CWP_TOP_Core, 'generateTweetFromPost' )
-		     || ! method_exists( $CWP_TOP_Core, 'tweetPost' ) ) {
-			return false;
-		}
-
-		$message = $CWP_TOP_Core->generateTweetFromPost( $post, $network );
-
-		if ( empty( $message ) ) {
-			return false;
-		}
-
-		echo $message;
-
-		//$CWP_TOP_Core->tweetPost( $message, $network, $post );
-
-	}*/
+	 * @args    $platform  - string - e.g. 'facebook' or 'twitter'.
+	 */
+	public function is_excluded_post( $post_id, $platform ) {
+		return in_array( $post_id, $this->get_excluded_posts( $platform ) );
+	}
 }

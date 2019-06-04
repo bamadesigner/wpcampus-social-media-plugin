@@ -9,7 +9,10 @@
  * @class       WPCampus_Social_Media_Global
  * @package     WPCampus Social Media
  */
+
 final class WPCampus_Social_Media_Global {
+
+	private $helper;
 
 	/**
 	 * We don't need to instantiate this class.
@@ -22,18 +25,50 @@ final class WPCampus_Social_Media_Global {
 	public static function register() {
 		$plugin = new self();
 
+		$plugin->helper = wpcampus_social_media();
+
+		// Runs on activation and deactivation.
+		register_activation_hook( __FILE__, array( $plugin, 'activate' ) );
+		register_deactivation_hook( __FILE__, array( $plugin, 'deactivate' ) );
+
 		// Load our text domain.
 		add_action( 'plugins_loaded', array( $plugin, 'textdomain' ) );
 
 		// Register our social media feeds.
-		//add_action( 'init', array( $plugin, 'add_feeds' ) );
+		add_filter( 'query_vars', array( $plugin, 'add_query_vars' ) );
+		add_action( 'init', array( $plugin, 'add_feeds' ) );
+		add_filter( 'template_include', array( $plugin, 'use_social_feed_template' ), 100 );
+
+		add_filter( 'posts_pre_query', array( $plugin, 'modify_social_posts_pre_query' ), 100, 2 );
+		add_filter( 'posts_request', array( $plugin, 'modify_social_posts_request' ), 100, 2 );
+		add_filter( 'the_posts', array( $plugin, 'modify_social_posts' ), 100, 2 );
+
+		// Adding for the conference schedules plugin.
+		add_filter( 'wpcampus_social_end_date_time', array( $plugin, 'filter_schedule_social_end_date_time' ), 100, 3 );
 
 		// Filter the tweets.
-		//add_filter( 'rop_override_tweet', array( $plugin, 'override_old_post_tweet' ), 10, 3 );
+		add_filter( 'wpcampus_social_message', array( $plugin, 'filter_social_message' ), 10, 3 );
 
-		// Modify the query for our social feeds.
-		//add_filter( 'posts_request', array( $plugin, 'modify_social_posts_request' ), 100, 2 );
+	}
 
+	/**
+	 * This method runs when the plugin is activated.
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function activate() {
+		flush_rewrite_rules( true );
+	}
+
+	/**
+	 * This method runs when the plugin is deactivated.
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function deactivate() {
+		flush_rewrite_rules( true );
 	}
 
 	/**
@@ -45,93 +80,135 @@ final class WPCampus_Social_Media_Global {
 	}
 
 	/**
+	 * Add custom query vars.
+	 *
+	 * @access  public
+	 */
+	public function add_query_vars( $vars ) {
+		$vars[] = $this->helper->get_feed_query_var();
+		return $vars;
+	}
+
+	/**
 	 * Add our RSS feeds.
 	 *
 	 * @access public
 	 * @return void
-
+	 */
 	public function add_feeds() {
-		foreach ( wpcampus_social_media()->get_social_feeds() as $feed ) {
-			add_feed( $feed, array( $this, 'print_social_feed' ) );
-		}
-	}*/
+
+		$query_var = $this->helper->get_feed_query_var();
+		$feed_default = $this->helper->get_feed_default();
+
+		add_rewrite_rule( '^feed/social/([a-z]+)/?', 'index.php?' . $query_var . '=$matches[1]', 'top' );
+		add_rewrite_rule( '^feed/social/?', 'index.php?' . $query_var . '=' . $feed_default, 'top' );
+	}
 
 	/**
 	 * Print our social media feeds.
 	 *
 	 * @access public
 	 * @return void
-
-	public function print_social_feed() {
-		require_once wpcampus_social_media()->get_plugin_dir() . 'inc/feed-social.php';
-	}*/
+	 */
+	public function use_social_feed_template( $template ) {
+		global $wp_query;
+		if ( $this->helper->is_social_feed( $wp_query ) ) {
+			return $this->helper->get_plugin_dir() . 'inc/feed-social-json.php';
+		}
+		return $template;
+	}
 
 	/**
+	 * Make sure the main query doesnt return posts. We query them later.
+	 */
+	public function modify_social_posts( $posts, $query ) {
+
+		if ( ! $this->helper->is_social_feed( $query ) ) {
+			return $posts;
+		}
+
+		return [];
+	}
+
+	/**
+	 * Return 0 to bypass WordPress's default post queries.
 	 *
+	 * @param array|null $posts Return an array of post data to short-circuit WP's query,
+	 *                          or null to allow WP to run its normal queries.
+	 * @param WP_Query   $query  The WP_Query instance (passed by reference).
+	 *
+	 * @return int
+	 */
+	public function modify_social_posts_pre_query( $posts, $query ) {
 
-	public function modify_social_posts_request( $request, $query ) {
-		global $wpdb;
+		if ( ! $this->helper->is_social_feed( $query ) ) {
+			return $posts;
+		}
 
-		// Not in the admin.
-		if ( is_admin() ) {
+		return 0;
+	}
+
+	/**
+	 * Make the main query blank so we can run our own query in the feed file.
+	 *
+	 * @param string   $request The complete SQL query.
+	 * @param WP_Query $query    The WP_Query instance (passed by reference).
+	 *
+	 * @return string
+	 */
+	public function modify_social_posts_request( $request, $query ) : string {
+
+		if ( ! $this->helper->is_social_feed( $query ) ) {
 			return $request;
 		}
 
-
-		// Only for social feeds.
-		if ( ! $query->is_feed( wpcampus_social_media()->get_social_feeds() ) ) {
-			return $request;
-		}
-
-		// Get the current time.
-		$timezone = wpcampus_social_media()->get_site_timezone();
-		$current_time = new DateTime( 'now', $timezone );
-
-		// Get the timezone offset.
-		$current_time_offset = $current_time->getOffset();
-
-		// Get the difference in hours.
-		$timezone_offset_hours = ( abs( $current_time_offset ) / 60 ) / 60;
-		$timezone_offset_hours = ( $current_time_offset < 0 ) ? ( 0 - $timezone_offset_hours ) : $timezone_offset_hours;
-
-		return "SELECT posts.*,
-			message.meta_value AS social_message,
-			NOW() AS now,
-			STR_TO_DATE( CONCAT( sdate.meta_value, ' ', stime.meta_value), '%Y-%m-%d %H:%i:%s' ) AS event_start,
-			sdate.meta_value AS event_date,
-			stime.meta_value AS event_start_time
-			FROM {$wpdb->posts} posts
-			INNER JOIN {$wpdb->postmeta} message ON message.post_id = posts.ID AND message.meta_key = 'sws_meta_format' AND message.meta_value != ''
-			INNER JOIN {$wpdb->postmeta} sdate ON sdate.post_id = posts.ID AND sdate.meta_key = 'conf_sch_event_date' AND sdate.meta_value != ''
-			INNER JOIN {$wpdb->postmeta} stime ON stime.post_id = posts.ID AND stime.meta_key = 'conf_sch_event_start_time' AND stime.meta_value != ''
-			WHERE posts.post_type = 'schedule' AND posts.post_status = 'publish' AND DATE_ADD( NOW(), INTERVAL " . (int) $timezone_offset_hours . " HOUR ) < STR_TO_DATE( CONCAT( sdate.meta_value, ' ', stime.meta_value), '%Y-%m-%d %H:%i:%s' )";
-	}*/
+		return "SELECT 0";
+	}
 
 	/**
-	 * Filters the tweets created by the Revive Social plugin.
+	 * Needs to be in site timezone.
+	 */
+	public function filter_schedule_social_end_date_time( $end_date_time, $post_id, $platform ) {
+		if ( 'schedule' != get_post_type( $post_id ) ) {
+			return $end_date_time;
+		}
+
+		$event_date = get_post_meta( $post_id, 'conf_sch_event_date', true );
+
+		if ( empty( $event_date ) ) {
+			return $end_date_time;
+		}
+
+		$time = get_post_meta( $post_id, 'conf_sch_event_start_time', true );
+
+		if ( empty( $time ) ) {
+			$time = get_post_meta( $post_id, 'conf_sch_event_end_time', true );
+		}
+
+		if ( empty( $time ) ) {
+			return $end_date_time;
+		}
+
+		$end_date_time = new DateTime( $event_date . ' ' . $time, $this->helper->get_site_timezone() );
+
+		return $end_date_time->format( $this->helper->get_format_date_time() );
+	}
+
+	/**
+	 * Filter tweets to auto add:
+	 *  - The #WPCampus hashtag
 	 *
-	 * Had to hack the core apply_filters() to add $network as parameter.
-	 *
-	 * Make sure you update the "top_opt_post_formats" option
-	 * saved from the plugin to change the max tweet length from
-	 * 140 to 280.
-	 *
-	 * We have post meta named "wpc_twitter_message" that is
-	 * added to posts to give us a space to compose a custom tweet.
+	 * @TODO auto add permalink?
 	 *
 	 * Below, we automatically add the "#WPCampus" hashtag if not
 	 * included in the custom tweet.
+	 */
+	public function filter_social_message( $message, $post_id, $platform ) {
 
-	public function override_old_post_tweet( $final_tweet, $post, $network = '' ) {
+		$post = get_post( $post_id );
 
-		*//*
-		 * If no network is passed, set to Twitter
-		 * since this argument was a hack anyway.
-		 *//*
-		$network = $network ?: 'twitter';
-
-		$current_tweet_length = strlen( $final_tweet );
-		$tweet_max_length     = wpcampus_social_media()->get_max_message_length( $network );
+		$current_tweet_length = strlen( $message );
+		$tweet_max_length     = $this->helper->get_max_message_length( $platform );
 
 		$ellipses = '...';
 
@@ -140,7 +217,7 @@ final class WPCampus_Social_Media_Global {
 
 		$bitly        = '[bit.ly]';
 		$bitly_length = strlen( $bitly );
-		$has_bitly    = ( false !== strpos( $final_tweet, $bitly ) );
+		$has_bitly    = ( false !== strpos( $message, $bitly ) );
 
 		// If the tweet is blank other than a bitly link.
 		$is_blank = ! $current_tweet_length || ( $has_bitly && $current_tweet_length == $bitly_length );
@@ -160,46 +237,46 @@ final class WPCampus_Social_Media_Global {
 
 				case 'podcast':
 					// translators: A prefix for the WPCampus podcast.
-					$final_tweet_prefix = sprintf( __( 'The %s Podcast:', 'wpcampus-social' ), 'WPCampus' ) . ' ' . $post->post_title;
+					$message_prefix = sprintf( __( 'The %s Podcast:', 'wpcampus-social' ), 'WPCampus' ) . ' ' . $post->post_title;
 					break;
 
 				// Prefix with the title.
 				default:
-					$final_tweet_prefix = $post->post_title;
+					$message_prefix = $post->post_title;
 					break;
 			}
 
 			// Make sure what we want to prefix isn't too long.
-			$prefix_length     = strlen( $final_tweet_prefix );
+			$prefix_length     = strlen( $message_prefix );
 			$prefix_max_length = $has_bitly ? ( $tweet_max_length - $bitly_length - 1 ) : $tweet_max_length;
 
-			*//*
+			/*
 			 * Trim if needed and add ellipses.
 			 *
 			 * @TODO:
 			 *  - This doesn't account for if it it ends with period.
-			 *//*
+			 */
 			if ( $prefix_length > $prefix_max_length ) {
 
 				// Trim the prefix.
-				$final_tweet_prefix = substr( $final_tweet, 0, $prefix_max_length - strlen( $ellipses ) );
+				$message_prefix = substr( $message, 0, $prefix_max_length - strlen( $ellipses ) );
 
 				// Add the ellipses.
-				$final_tweet_prefix . $ellipses;
+				$message_prefix . $ellipses;
 
 			}
 
-			if ( ! empty( $final_tweet_prefix ) ) {
-				if ( empty( $final_tweet ) ) {
-					$final_tweet = $final_tweet_prefix;
+			if ( ! empty( $message_prefix ) ) {
+				if ( empty( $message ) ) {
+					$message = $message_prefix;
 				} else {
-					$final_tweet = $final_tweet_prefix . ' ' . $final_tweet;
+					$message = $message_prefix . ' ' . $message;
 				}
 			}
 		}
 
 		// Does the tweet have our name?
-		$has_wpcampus = strpos( $final_tweet, 'WPCampus' );
+		$has_wpcampus = strpos( $message, 'WPCampus' );
 
 		// Add #WPCampus if not in the tweet.
 		if ( false === $has_wpcampus ) {
@@ -213,57 +290,49 @@ final class WPCampus_Social_Media_Global {
 				if ( $has_bitly ) {
 
 					// Remove bitly shortcode for now.
-					$final_tweet = str_replace( $bitly, '', $final_tweet );
+					$message = str_replace( $bitly, '', $message );
 
 				}
 
 				// Trim the tweet.
-				$final_tweet = substr( $final_tweet, 0, $tweet_max_length - strlen( $wpcampus_hashtag_add ) - strlen( $ellipses ) );
+				$message = substr( $message, 0, $tweet_max_length - strlen( $wpcampus_hashtag_add ) - strlen( $ellipses ) );
 
-				*//*
+				/*
 				 * @TODO:
 				 *  - Make sure it doesn't end in a "."?
 				 *    The revive plugin seems to already trim
 				 *    but doesn't add a "." or a "...".
-				 *//*
+				 */
 
 				// Add the ellipses.
-				$final_tweet .= $ellipses;
+				$message .= $ellipses;
 
 				// Add back our link.
 				if ( $has_bitly ) {
-					$final_tweet .= " {$bitly}";
+					$message .= " {$bitly}";
 				}
 			}
 
 			// Add the hashtag.
-			$final_tweet .= $wpcampus_hashtag_add;
+			$message .= $wpcampus_hashtag_add;
 
-		} elseif ( ! preg_match( '/((\s\#WPCampus)|(\#WPCampus\s?))/i', $final_tweet ) ) {
+		} elseif ( ! preg_match( '/((\s\#WPCampus)|(\#WPCampus\s?))/i', $message ) ) {
 
-			*//*
+			/*
 			 * This means we have "WPCampus" but not "#WPCampus",
 			 * but lets only add the hashtag if enough room.
-			 *//*
+			 */
 			if ( $current_tweet_length < ( $tweet_max_length - 1 ) ) {
 
 				// We only want to add the hashtag once so replace first occurrence.
-				$first_wpcampus = strpos( $final_tweet, 'WPCampus' );
+				$first_wpcampus = strpos( $message, 'WPCampus' );
 				if ( false !== $first_wpcampus ) {
-					$final_tweet = substr_replace( $final_tweet, '#WPCampus', $first_wpcampus, strlen( 'WPCampus' ) );
+					$message = substr_replace( $message, '#WPCampus', $first_wpcampus, strlen( 'WPCampus' ) );
 				}
 			}
 		}
 
-		// Keeping this code here in case tweet lengths become an issue with images.
-		*//*// global $CWP_TOP_Core;
-		if ( class_exists( 'CWP_TOP_Core' ) && method_exists( $CWP_TOP_Core, 'isPostWithImageEnabled' ) ) {
-			if ( $CWP_TOP_Core->isPostWithImageEnabled( 'twitter' ) ) {
-				$final_tweet .= ' [IMAGE]';
-			}
-		}*//*
-
-		return $final_tweet;
-	}*/
+		return $message;
+	}
 }
 WPCampus_Social_Media_Global::register();

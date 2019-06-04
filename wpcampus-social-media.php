@@ -13,6 +13,7 @@
 /*
  * @TODO:
  *  - Add button to tweet immediately.
+ *  - Remove usage of TOP or revive social
  */
 
 defined( 'ABSPATH' ) or die();
@@ -28,6 +29,7 @@ require_once $plugin_dir . 'inc/class-wpcampus-social-media-global.php';
 
 // Load admin functionality in the admin.
 if ( is_admin() ) {
+	require_once $plugin_dir . 'inc/wpcampus-social-media-fields.php';
 	require_once $plugin_dir . 'inc/class-wpcampus-social-media-admin.php';
 }
 

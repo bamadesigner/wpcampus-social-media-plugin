@@ -25,9 +25,9 @@
 	// Invoked by textarea.
 	$.fn.wpcampus_social_update_preview = function() {
 		var $textarea = $(this),
-			network = $textarea.data( 'network' );
+			platform = $textarea.data( 'platform' );
 
-		if ( ! network || $.inArray( network, [ 'facebook', 'twitter' ] ) < 0 ) {
+		if ( ! platform || $.inArray( platform, [ 'facebook', 'twitter', 'slack' ] ) < 0 ) {
 			return;
 		}
 
@@ -55,7 +55,7 @@
 			data: {
 				action: 'wpcampus_social_update_preview',
 				post_id: postID,
-				network: network,
+				platform: platform,
 				message: message
 			},
 			success: function( new_preview_message ) {
