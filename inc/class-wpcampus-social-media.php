@@ -16,6 +16,7 @@ final class WPCampus_Social_Media {
 	CONST META_KEY_SOCIAL_TWITTER = 'wpc_social_message_twitter';
 	CONST META_KEY_SOCIAL_FACEBOOK = 'wpc_social_message_facebook';
 	CONST META_KEY_SOCIAL_SLACK = 'wpc_social_message_slack';
+	const META_KEY_SOCIAL_DEACTIVATE = 'wpc_social_deactivate';
 
 	CONST USER_CAP_SOCIAL_SHARE = 'wpc_share_social_media';
 
@@ -273,6 +274,13 @@ final class WPCampus_Social_Media {
 	 *
 	 */
 	public function get_meta_key_social( string $platform ) : string {
+	public function get_meta_key_social_deactivate() : string {
+		return self::META_KEY_SOCIAL_DEACTIVATE;
+	}
+
+	/**
+	 *
+	 */
 		if ( 'twitter' == $platform ) {
 			return self::META_KEY_SOCIAL_TWITTER;
 		} elseif ( 'facebook' == $platform ) {
@@ -309,6 +317,13 @@ final class WPCampus_Social_Media {
 	 */
 	public function is_social_feed( WP_Query $query ) {
 		return (bool) $query->get( self::FEED_QUERY_VAR );
+	}
+
+	/**
+	 *
+	 */
+	public function is_social_deactivated( $post_id ) : bool {
+		return (bool) get_post_meta( $post_id, $this->get_meta_key_social_deactivate(), true );
 	}
 
 	/**

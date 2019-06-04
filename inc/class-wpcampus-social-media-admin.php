@@ -136,6 +136,15 @@ final class WPCampus_Social_Media_Admin {
 
 			case 'wpc_social':
 
+				$is_deactivated = $this->helper->is_social_deactivated( $post_id );
+
+				if ( $is_deactivated ) {
+					?>
+					<span style="display:block;"><em><?php _e( 'This post is deactivated', 'wpcampus-social' ); ?></em></span>
+					<?php
+					break;
+				}
+
 				$twitter_excluded = $this->helper->is_excluded_post( $post_id, 'twitter' );
 				$facebook_excluded = $this->helper->is_excluded_post( $post_id, 'facebook' );
 
