@@ -13,7 +13,7 @@ final class WPCampus_Social_Media {
 
 	const FEED_DEFAULT = 'twitter';
 
-	const FEED_WEIGHT_DEFAULT = 10;
+	const FEED_WEIGHT_DEFAULT = 5;
 
 	const META_KEY_SOCIAL_DEACTIVATE = 'wpc_social_deactivate';
 
