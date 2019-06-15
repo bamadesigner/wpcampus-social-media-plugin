@@ -49,7 +49,7 @@ acf_add_local_field_group( array(
 			'name' => 'wpc_social_platform',
 			'type' => 'checkbox',
 			'instructions' => '',
-			'required' => 1,
+			'required' => 0,
 			'conditional_logic' => array(
 				array(
 					array(
