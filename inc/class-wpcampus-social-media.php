@@ -13,6 +13,8 @@ final class WPCampus_Social_Media {
 
 	const FEED_DEFAULT = 'twitter';
 
+	const FEED_WEIGHT_DEFAULT = 10;
+
 	const META_KEY_SOCIAL_DEACTIVATE = 'wpc_social_deactivate';
 
 	const META_KEY_SOCIAL_MESSAGE_TWITTER = 'wpc_social_message_twitter';
@@ -274,6 +276,13 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
+	public function get_feed_weight_default() : int {
+		return self::FEED_WEIGHT_DEFAULT;
+	}
+
+	/**
+	 *
+	 */
 	public function get_meta_key_social_deactivate() : string {
 		return self::META_KEY_SOCIAL_DEACTIVATE;
 	}
@@ -363,10 +372,17 @@ final class WPCampus_Social_Media {
 		$start_date_time_key = 'wpc_social_start_date_time';
 		$end_date_time_key = 'wpc_social_end_date_time';
 
+		$weight_key = "wpc_social_message_{$platform}_weight";
+
 		// @TODO remember this?
 		//CONVERT( coalesce(end_date_time.meta_value, '2038-01-01 00:00:00'), DATETIME ) desc,
 
-		$query = "SELECT posts.ID, posts.message, deactivate.meta_value AS deactivate, start_date_time.meta_value AS start_date_time, end_date_time.meta_value AS end_date_time
+		$query = "SELECT posts.ID,
+			posts.message,
+			deactivate.meta_value AS deactivate,
+			start_date_time.meta_value AS start_date_time,
+			end_date_time.meta_value AS end_date_time,
+			weight.meta_value AS weight
 			FROM (
 			    SELECT posts.ID, posts.post_modified_gmt, message.meta_value AS message FROM {$wpdb->posts} posts
 			    INNER JOIN {$wpdb->postmeta} message ON message.post_id = posts.ID AND message.meta_key = '" . $message_key . "' AND message.meta_value != ''
@@ -376,6 +392,7 @@ final class WPCampus_Social_Media {
 			LEFT JOIN {$wpdb->postmeta} deactivate ON deactivate.post_id = posts.ID AND deactivate.meta_key = '" . $deactivate_key . "'
 			LEFT JOIN {$wpdb->postmeta} start_date_time ON start_date_time.post_id = posts.ID AND start_date_time.meta_key = '" . $start_date_time_key . "'
 			LEFT JOIN {$wpdb->postmeta} end_date_time ON end_date_time.post_id = posts.ID AND end_date_time.meta_key = '" . $end_date_time_key . "'
+			LEFT JOIN {$wpdb->postmeta} weight ON weight.post_id = posts.ID AND weight.meta_key = '" . $weight_key . "'
 			WHERE ( deactivate.meta_value IS NULL OR deactivate.meta_value != '1' )
 				AND IF ( start_date_time.meta_value IS NOT NULL AND start_date_time.meta_value != '', CONVERT( start_date_time.meta_value, DATETIME ) <= DATE_ADD( NOW(), INTERVAL " . $timezone_offset_hours . " HOUR ), true )
 				AND IF ( end_date_time.meta_value IS NOT NULL AND end_date_time.meta_value != '', CONVERT( end_date_time.meta_value, DATETIME ) > DATE_ADD( NOW(), INTERVAL " . $timezone_offset_hours . " HOUR ), true )
@@ -440,6 +457,9 @@ final class WPCampus_Social_Media {
 				}
 			}
 
+			$weight = ! empty( $item->weight ) ? (int) $item->weight : $this->get_feed_weight_default();
+			$weight = $this->filter_social_media_weight( $weight, $item->ID, $platform );
+
 			$feed_items[] = [
 				'ID'        => $item->ID,
 				'active'    => empty( $item->deactivate ),
@@ -447,6 +467,7 @@ final class WPCampus_Social_Media {
 				'permalink' => get_permalink( $item->ID ),
 				'start'     => $start_date_time,
 				'end'       => $end_date_time,
+				'weight'    => $weight,
 			];
 		}
 
@@ -476,6 +497,13 @@ final class WPCampus_Social_Media {
 	 */
 	public function filter_social_media_end_date_time( string $end_date_time, int $post_id, string $platform ) : string {
 		return apply_filters( 'wpcampus_social_end_date_time', $end_date_time, $post_id, $platform );
+	}
+
+	/**
+	 *
+	 */
+	public function filter_social_media_weight( int $weight, int $post_id, string $platform ) : int {
+		return (int) apply_filters( 'wpcampus_social_weight', $weight, $post_id, $platform );
 	}
 
 	/**
@@ -614,8 +642,7 @@ final class WPCampus_Social_Media {
 	/**
 	 * Get the max message length depending on platform.
 	 *
-	 * If no platform is passed, will get max lengths
-	 * for all platforms.
+	 * If no platform is passed, will get max lengths for all platforms.
 	 *
 	 * @args    $platform - e.g. 'facebook' or 'twitter'.
 	 * @return  int|array - if platform, returns length for platform. Array of all otherwise.

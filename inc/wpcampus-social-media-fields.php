@@ -23,6 +23,8 @@ foreach ( $post_types as $post_type ) {
 	];
 }
 
+$weight_default = $helper->get_feed_weight_default();
+
 acf_add_local_field_group( array(
 	'key' => 'group_5cf4242673897',
 	'title' => 'WPCampus: Social Media',
@@ -112,6 +114,24 @@ acf_add_local_field_group( array(
 			'first_day' => 1,
 		),
 		array(
+			'key' => 'field_5df4167cba3ce',
+			'label' => 'Twitter weight',
+			'name' => 'wpc_social_message_twitter_weight',
+			'type' => 'number',
+			'instructions' => sprintf( 'By default, all posts have the same weight of %d. If you want this post to have more or less weight, increase or decease the number.', $weight_default ),
+			'required' => 1,
+			'conditional_logic' => array(
+				array(
+					array(
+						'field' => 'field_5cf42434025ef',
+						'operator' => '==',
+						'value' => 'twitter',
+					),
+				),
+			),
+			'default_value' => $weight_default,
+		),
+		array(
 			'key' => 'field_5cf4265bba5ce',
 			'label' => 'Twitter message',
 			'name' => 'wpc_social_message_twitter',
@@ -134,6 +154,24 @@ acf_add_local_field_group( array(
 			'maxlength' => 280,
 			'rows' => 8,
 			'new_lines' => '',
+		),
+		array(
+			'key' => 'field_5be41682ba2cf',
+			'label' => 'Facebook weight',
+			'name' => 'wpc_social_message_facebook_weight',
+			'type' => 'number',
+			'instructions' => sprintf( 'By default, all posts have the same weight of %d. If you want this post to have more or less weight, increase or decease the number.', $weight_default ),
+			'required' => 1,
+			'conditional_logic' => array(
+				array(
+					array(
+						'field' => 'field_5cf42434025ef',
+						'operator' => '==',
+						'value' => 'facebook',
+					),
+				),
+			),
+			'default_value' => $weight_default,
 		),
 		array(
 			'key' => 'field_5cf42692ba5cf',
