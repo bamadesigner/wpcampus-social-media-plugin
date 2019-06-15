@@ -98,7 +98,7 @@ final class WPCampus_Social_Media {
 	 */
 	private $max_message_length = array(
 		'facebook' => 400,
-		'twitter'  => 280,
+		'twitter'  => 400,
 		'slack'    => 0,
 	);
 
