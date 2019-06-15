@@ -220,19 +220,19 @@ final class WPCampus_Social_Media_Global {
 		// A URL of any length will be altered to 23 characters.
 		$url_length = 23;
 
-		$bitly        = '[bit.ly]';
-		$bitly_length = strlen( $bitly );
-		$has_bitly    = ( false !== strpos( $message, $bitly ) );
+		$url_placeholder = '{url}';
+		$url_placeholder_length = strlen( $url_placeholder );
+		$has_url_placeholder = ( false !== strpos( $message, $url_placeholder ) );
 
-		// If the tweet is blank other than a bitly link.
-		$is_blank = ! $current_tweet_length || ( $has_bitly && $current_tweet_length == $bitly_length );
+		// If the tweet is blank other than a {url} placeholder.
+		$is_blank = ! $current_tweet_length || ( $has_url_placeholder && $current_tweet_length == $url_placeholder_length );
 
 		// URL length - what we have for bit.ly shortcode - space
-		$space_for_bitly = $url_length - $bitly_length - 1;
+		$space_for_url = $url_length - $url_placeholder_length - 1;
 
 		// Adjust length for what we need for URL.
-		if ( $has_bitly ) {
-			$current_tweet_length -= $space_for_bitly;
+		if ( $has_url_placeholder ) {
+			$current_tweet_length -= $space_for_url;
 		}
 
 		// If the tweet is blank, compose something simple.
@@ -253,7 +253,7 @@ final class WPCampus_Social_Media_Global {
 
 			// Make sure what we want to prefix isn't too long.
 			$prefix_length     = strlen( $message_prefix );
-			$prefix_max_length = $has_bitly ? ( $tweet_max_length - $bitly_length - 1 ) : $tweet_max_length;
+			$prefix_max_length = $has_url_placeholder ? ( $tweet_max_length - $url_placeholder_length - 1 ) : $tweet_max_length;
 
 			/*
 			 * Trim if needed and add ellipses.
@@ -291,12 +291,12 @@ final class WPCampus_Social_Media_Global {
 			// If tweet is too long to add the hashtag, trim and add ellipses.
 			if ( $current_tweet_length > ( $tweet_max_length - strlen( $wpcampus_hashtag_add ) ) ) {
 
-				// Make sure we're making room for our link.
-				if ( $has_bitly ) {
-
-					// Remove bitly shortcode for now.
-					$message = str_replace( $bitly, '', $message );
-
+				/*
+				 * Make sure we're making room for our link.
+				 * Remove URL placeholder for now.
+				 */
+				if ( $has_url_placeholder ) {
+					$message = str_replace( $url_placeholder, '', $message );
 				}
 
 				// Trim the tweet.
@@ -313,8 +313,8 @@ final class WPCampus_Social_Media_Global {
 				$message .= $ellipses;
 
 				// Add back our link.
-				if ( $has_bitly ) {
-					$message .= " {$bitly}";
+				if ( $has_url_placeholder ) {
+					$message .= " {$url_placeholder}";
 				}
 			}
 
@@ -334,6 +334,16 @@ final class WPCampus_Social_Media_Global {
 				if ( false !== $first_wpcampus ) {
 					$message = substr_replace( $message, '#WPCampus', $first_wpcampus, strlen( 'WPCampus' ) );
 				}
+			}
+		}
+
+		// Add the link.
+		if ( $has_url_placeholder ) {
+
+			$permalink = get_permalink( $post_id );
+
+			if ( ! empty( $permalink ) ) {
+				$message = str_replace( $url_placeholder, $permalink, $message );
 			}
 		}
 
