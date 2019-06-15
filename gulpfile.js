@@ -58,7 +58,7 @@ gulp.task('js',function() {
 gulp.task('compile',['css','js']);
 
 // I've got my eyes on you(r file changes).
-gulp.task('watch',function() {
+gulp.task('watch',['default'],function() {
 	gulp.watch(src.js,['js']);
 	gulp.watch(src.css,['css']);
 });

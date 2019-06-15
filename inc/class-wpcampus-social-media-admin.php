@@ -40,8 +40,7 @@ final class WPCampus_Social_Media_Admin {
 		$plugin->helper = wpcampus_social_media();
 
 		// Add needed styles and scripts.
-		// @TODO add back when we want preview functionality.
-		//add_action( 'admin_enqueue_scripts', array( $plugin, 'enqueue_styles_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $plugin, 'enqueue_styles_scripts' ) );
 
 		// Add and populate custom columns.
 		add_filter( 'manage_posts_columns', array( $plugin, 'add_columns' ), 10, 2 );
@@ -64,12 +63,14 @@ final class WPCampus_Social_Media_Admin {
 
 	/**
 	 * Enqueue admin styles and scripts.
-
+	 *
+	 * @TODO add back preview functionality?
+	 */
 	public function enqueue_styles_scripts( $hook ) {
 		global $post_type;
 
 		// We only need to load our CSS on edit screens.
-		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
+		if ( ! in_array( $hook, array( 'edit.php' ) ) ) {
 			return;
 		}
 
@@ -80,10 +81,12 @@ final class WPCampus_Social_Media_Admin {
 
 		$assets_url = $this->helper->get_plugin_url() . 'assets/';
 
-		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', array(), null );
-		wp_enqueue_script( 'wpcampus-social-edit', $assets_url . 'js/wpcampus-social-edit.min.js', array( 'jquery' ), null, true );
+		$assets_ver = '1.0';
 
-	}*/
+		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', array(), $assets_ver );
+		wp_enqueue_script( 'wpcampus-social-edit', $assets_url . 'js/wpcampus-social-edit.min.js', array( 'jquery' ), $assets_ver, true );
+
+	}
 
 	/**
 	 * Add custom admin columns for profiles.
@@ -136,21 +139,21 @@ final class WPCampus_Social_Media_Admin {
 
 			case 'wpc_social':
 
-				$is_deactivated = $this->helper->is_social_deactivated( $post_id );
+				/*$is_deactivated = $this->helper->is_social_deactivated( $post_id );
 
 				if ( $is_deactivated ) {
 					?>
-					<span style="display:block;"><em><?php _e( 'This post is deactivated', 'wpcampus-social' ); ?></em></span>
+					<span class="wpc-social-col-message"><em><?php _e( 'This post is deactivated', 'wpcampus-social' ); ?></em></span>
 					<?php
 					break;
-				}
+				}*/
 
 				$twitter_excluded = $this->helper->is_excluded_post( $post_id, 'twitter' );
 				$facebook_excluded = $this->helper->is_excluded_post( $post_id, 'facebook' );
 
 				if ( $twitter_excluded && $facebook_excluded ) :
 					?>
-					<span style="display:block;"><em><?php _e( 'This post is disabled for automatic sharing.', 'wpcampus-social' ); ?></em></span>
+					<span class="wpc-social-col-message"><em><?php _e( 'This post is disabled for automatic sharing.', 'wpcampus-social' ); ?></em></span>
 					<?php
 					break;
 
@@ -162,40 +165,45 @@ final class WPCampus_Social_Media_Admin {
 
 				$images_url = $this->helper->get_plugin_url() . 'assets/images/';
 
+				$twitter_label = 'Twitter';
+				$facebook_label = 'Facebook';
+
 				if ( ! empty( $twitter_message ) ) :
 					?>
-					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Twitter' ); ?>" title="<?php echo esc_attr( $twitter_message ); ?>">
+					<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $twitter_label ); ?>" title="<?php echo esc_attr( $twitter_message ); ?>">
 					<?php
 				else :
 
-					$twitter_label = 'Twitter';
-
 					if ( $twitter_excluded ) :
 						?>
-						<span style="display:block;"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label ); ?></em></span>
+						<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label ); ?></em></span>
 						<?php
 					else :
+
+						$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $twitter_label );
+
 						?>
-						<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), $twitter_label ); ?></em></span>
+						<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
 						<?php
 					endif;
 				endif;
 
 				if ( ! empty( $facebook_message ) ) :
 					?>
-					<img style="width:auto;height:25px;margin:5px 5px 5px 0;" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), 'Facebook' ); ?>" title="<?php echo esc_attr( $facebook_message ); ?>">
+					<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $facebook_label ); ?>" title="<?php echo esc_attr( $facebook_message ); ?>">
 					<?php
 				else :
 
-					$facebook_label = 'Facebook';
-
 					if ( $facebook_excluded ) :
 						?>
-						<span style="display:block;"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label ); ?></em></span>
+						<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label ); ?></em></span>
 						<?php
 					else :
+
+						$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $facebook_label );
+
 						?>
-						<span style="display:block;"><em><?php printf( __( 'Needs %s message', 'wpcampus-social' ), $facebook_label ); ?></em></span>
+						<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
 						<?php
 					endif;
 				endif;

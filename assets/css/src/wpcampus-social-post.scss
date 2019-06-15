@@ -1,0 +1,122 @@
+$inside-padding: 17px;
+$primary-color: #0073aa;
+$bg-color: rgba($primary-color,0.05);
+#wpcampus-social-preview-mb {
+	box-sizing: inherit;
+
+	* {
+		box-sizing: inherit;
+
+		&:first-child {
+			margin-top: 0;
+		}
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	.inside {
+		background: #fff;
+		margin: 0;
+		padding: 0 $inside-padding;
+	}
+
+	.wpcampus-social-pre {
+		margin: 0 ( 0 - $inside-padding );
+		padding: 20px $inside-padding;
+	}
+
+	h3 {
+		font-size: 1.5em;
+		color: $primary-color;
+		margin: 15px 0 8px 0;
+	}
+
+	.highlight {
+		background: rgba(255,255,0,0.2);
+		padding: 10px;
+	}
+
+	textarea {
+		display: block;
+		width: 100%;
+		padding: 10px;
+	}
+
+	.wpcampus-social-textarea {
+		background: #f2f8f2;
+		margin: 0 ( 0 - $inside-padding );
+		padding: 20px $inside-padding;
+
+		.wpcampus-social-status {
+			font-weight: bold;
+		}
+	}
+
+	.wpcampus-social-buttons {
+		display: flex;
+
+		.wpcampus-social-button {
+			display: block;
+			width: 100%;
+			background: $primary-color;
+			color: #fff;
+			font-size: 110%;
+			font-weight: 600;
+			text-align: center;
+			text-decoration: underline;
+			padding: 15px 20px;
+			margin: 5px 0 0 5px;
+			border: 0;
+			cursor: pointer;
+
+			&:first-child {
+				margin-left: 0;
+			}
+		}
+	}
+
+	.wpcampus-social-preview-wrapper {
+		margin: 0 ( 0 - $inside-padding );
+		padding: 20px $inside-padding;
+		border-top: 1px solid #eee;
+
+		.wpcampus-social-preview-area {
+			margin: 17px 0 0 0;
+
+			h4 {
+				font-size: 1.1em;
+				color: #444;
+				text-transform: uppercase;
+				margin: 0;
+			}
+		}
+
+		.wpcampus-social-preview {
+			padding: 20px;
+			margin: 5px 0 0 0;
+		}
+
+		&.twitter {
+
+			.wpcampus-social-preview {
+				background: $bg-color; //#ebf5f9;
+			}
+		}
+
+		&.facebook {
+
+			.wpcampus-social-preview {
+				background: $bg-color; //#f0f2f7;
+			}
+		}
+
+		&.excluded {
+
+			.wpcampus-social-textarea {
+				background: #faf2f2;
+			}
+		}
+	}
+}
