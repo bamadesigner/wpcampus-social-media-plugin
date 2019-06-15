@@ -23,6 +23,12 @@ foreach ( $post_types as $post_type ) {
 	];
 }
 
+$max_lengths = $helper->get_max_message_length();
+
+$twitter_max_length = ! empty( $max_lengths['twitter'] ) ? $max_lengths['twitter'] : '';
+$facebook_max_length = ! empty( $max_lengths['facebook'] ) ? $max_lengths['facebook'] : '';
+//$slack_max_length = ! empty( $max_lengths['slack'] ) ? $max_lengths['slack'] : '';
+
 $weight_default = $helper->get_feed_weight_default();
 
 acf_add_local_field_group( array(
@@ -136,9 +142,9 @@ acf_add_local_field_group( array(
 			'label' => 'Twitter message',
 			'name' => 'wpc_social_message_twitter',
 			'type' => 'textarea',
-			'instructions' => 'Use this field to write a custom tweet for this post. Our social media service will automatically add the link to the post AND will add the "#WPCampus" hashtag if you don\'t add it yourself. The max is set at 280 characters.
+			'instructions' => sprintf( 'Use this field to write a custom tweet for this post. Use {url} to add the permalink. Our social media service will automatically add the "#WPCampus" hashtag if you don\'t add it yourself. The max is set at %d characters.
 			
-			Be mindful of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content. Also, these tweets will be shared over and over again so think about past, present, and future tense.',
+			Be mindful of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content. Also, these tweets will be shared over and over again so think about past, present, and future tense.', $twitter_max_length  ),
 			'required' => 1,
 			'conditional_logic' => array(
 				array(
@@ -151,7 +157,7 @@ acf_add_local_field_group( array(
 			),
 			'default_value' => '',
 			'placeholder' => 'What do you want to say to Twitter?',
-			'maxlength' => 280,
+			'maxlength' => $twitter_max_length,
 			'rows' => 8,
 			'new_lines' => '',
 		),
@@ -178,9 +184,9 @@ acf_add_local_field_group( array(
 			'label' => 'Facebook message',
 			'name' => 'wpc_social_message_facebook',
 			'type' => 'textarea',
-			'instructions' => 'Use this field to write a custom Facebook message for this post. Our social media service will automatically add the link to the post AND will add the "#WPCampus" hashtag if you don\'t add it yourself. The max is set at 400 characters.
+			'instructions' => sprintf( 'Use this field to write a custom Facebook message for this post. Use {url} to add the permalink. Our social media service will automatically add the "#WPCampus" hashtag if you don\'t add it yourself. The max is set at %d characters.
 			
-			Be mindful of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content. Also, these posts will be shared over and over again so think about past, present, and future tense.',
+			Be mindful of using phrases like "listen to the podcast" that might imply how a user can or can\'t consume the content. Also, these posts will be shared over and over again so think about past, present, and future tense.', $facebook_max_length ),
 			'required' => 1,
 			'conditional_logic' => array(
 				array(
@@ -193,7 +199,7 @@ acf_add_local_field_group( array(
 			),
 			'default_value' => '',
 			'placeholder' => 'What do you want to say to Facebook?',
-			'maxlength' => 400,
+			'maxlength' => $facebook_max_length,
 			'rows' => 8,
 			'new_lines' => '',
 		),
