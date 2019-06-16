@@ -522,8 +522,7 @@ final class WPCampus_Social_Media {
 				}
 			}
 
-			$weight = ! empty( $item->weight ) ? (int) $item->weight : $this->get_feed_weight_default();
-			$weight = $this->filter_social_media_weight( $weight, $item->ID, $platform );
+			$weight = $this->filter_social_media_weight( $item->weight, $item->ID, $platform );
 
 			$feed_items[] = [
 				'ID'        => $item->ID,
@@ -567,8 +566,13 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
-	public function filter_social_media_weight( int $weight, int $post_id, string $platform ) : int {
-		return (int) apply_filters( 'wpcampus_social_weight', $weight, $post_id, $platform );
+	public function filter_social_media_weight( string $weight, int $post_id, string $platform ) : int {
+
+		if ( empty( $weight ) ) {
+			$weight = $this->get_feed_weight_default();
+		}
+
+		return (int) apply_filters( 'wpcampus_social_weight', (int) $weight, $post_id, $platform );
 	}
 
 	/**
