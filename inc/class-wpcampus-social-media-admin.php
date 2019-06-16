@@ -40,24 +40,24 @@ final class WPCampus_Social_Media_Admin {
 		$plugin->helper = wpcampus_social_media();
 
 		// Add needed styles and scripts.
-		add_action( 'admin_enqueue_scripts', array( $plugin, 'enqueue_styles_scripts' ) );
+		add_action( 'admin_enqueue_scripts', [ $plugin, 'enqueue_styles_scripts' ] );
 
 		// Add and populate custom columns.
-		add_filter( 'manage_posts_columns', array( $plugin, 'add_columns' ), 10, 2 );
+		add_filter( 'manage_posts_columns', [ $plugin, 'add_columns' ], 10, 2 );
 
-		add_action( 'manage_pages_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
-		add_action( 'manage_posts_custom_column', array( $plugin, 'populate_columns' ), 10, 2 );
+		add_action( 'manage_pages_custom_column', [ $plugin, 'populate_columns' ], 10, 2 );
+		add_action( 'manage_posts_custom_column', [ $plugin, 'populate_columns' ], 10, 2 );
 
 		// Add meta boxes.
 		// @TODO add back when we want preview functionality.
-		//add_action( 'add_meta_boxes', array( $plugin, 'add_meta_boxes' ) );
+		//add_action( 'add_meta_boxes', [ $plugin, 'add_meta_boxes' ] );
 
 		// @TODO maybe remove since we replaced with ACF.
-		//add_action( 'save_post', array( $plugin, 'save_meta_boxes' ), 10, 3 );
+		//add_action( 'save_post', [ $plugin, 'save_meta_boxes' ], 10, 3 );
 
 		// Add AJAX to update social previews.
 		// @TODO add back when we want preview functionality.
-		//add_action( 'wp_ajax_wpcampus_social_update_preview', array( $plugin, 'ajax_get_message_for_post' ) );
+		//add_action( 'wp_ajax_wpcampus_social_update_preview', [ $plugin, 'ajax_get_message_for_post' ] );
 
 	}
 
@@ -83,8 +83,8 @@ final class WPCampus_Social_Media_Admin {
 
 		$assets_ver = '1.0';
 
-		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', array(), $assets_ver );
-		wp_enqueue_script( 'wpcampus-social-edit', $assets_url . 'js/wpcampus-social-edit.min.js', array( 'jquery' ), $assets_ver, true );
+		wp_enqueue_style( 'wpcampus-social-edit', $assets_url . 'css/wpcampus-social-edit.min.css', [], $assets_ver );
+		wp_enqueue_script( 'wpcampus-social-edit', $assets_url . 'js/wpcampus-social-edit.min.js', [ 'jquery' ], $assets_ver, true );
 
 	}
 
@@ -103,11 +103,11 @@ final class WPCampus_Social_Media_Admin {
 		}
 
 		// Store new columns.
-		$new_columns = array();
+		$new_columns = [];
 
-		$columns_to_add = array(
+		$columns_to_add = [
 			'wpc_social' => __( 'Social', 'wpcampus-social' ),
-		);
+		];
 
 		foreach ( $columns as $key => $value ) {
 
@@ -228,7 +228,7 @@ final class WPCampus_Social_Media_Admin {
 		// Add meta box for social media posts.
 		add_meta_box( 'wpcampus-social-preview-mb',
 			sprintf( __( '%s: Social Media Preview', 'wpcampus-social' ), 'WPCampus' ),
-			array( $this, 'print_meta_boxes' ),
+			[ $this, 'print_meta_boxes' ],
 			$share_post_types,
 			'normal',
 			'high'
@@ -324,13 +324,13 @@ final class WPCampus_Social_Media_Admin {
 		<?php
 
 		// Create buttons.
-		$buttons = array();
+		$buttons = [];
 
 		if ( 'twitter' == $platform ) {
 
-			$intent_url = $this->helper->get_tweet_intent_url( array(
+			$intent_url = $this->helper->get_tweet_intent_url( [
 				'text' => $message,
-			));
+			]);
 
 			if ( ! empty( $intent_url ) ) {
 				$buttons[] = '<a class="wpcampus-social-button" target="_blank" href="' . $intent_url . '">' . sprintf( __( 'Open tweet in %s intent', 'wpcampus-social' ), 'Twitter' ) . '</a>';
