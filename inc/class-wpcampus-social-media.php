@@ -397,8 +397,17 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
+	public function filter_social_deactivated( $deactivated, int $post_id ) : bool {
+		return (bool) apply_filters( 'wpcampus_social_deactivated', (bool) $deactivated, $post_id );
+	}
+
+	/**
+	 *
+	 */
 	public function is_social_deactivated( $post_id ) : bool {
-		return (bool) get_post_meta( $post_id, $this->get_meta_key_social_deactivate(), true );
+		$deactivated = (bool) get_post_meta( $post_id, $this->get_meta_key_social_deactivate(), true );
+		return $this->filter_social_deactivated( $deactivated, $post_id );
+	}
 	/**
 	 *
 	 */
