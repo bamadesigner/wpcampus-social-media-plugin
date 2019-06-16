@@ -902,6 +902,7 @@ final class WPCampus_Social_Media {
 
 		// @TODO remove any joins we dont need.
 		$query = "SELECT posts.ID,
+			posts.post_type,
 			platforms.meta_value AS platforms,
 			message_twitter.meta_value AS message_twitter,
 			message_facebook.meta_value AS message_facebook,
@@ -931,7 +932,7 @@ final class WPCampus_Social_Media {
 			LEFT JOIN {$wpdb->postmeta} weight_twitter ON weight_twitter.post_id = posts.ID AND weight_twitter.meta_key = %s
 			LEFT JOIN {$wpdb->postmeta} weight_facebook ON weight_facebook.post_id = posts.ID AND weight_facebook.meta_key = %s
 			LEFT JOIN {$wpdb->postmeta} weight_slack ON weight_slack.post_id = posts.ID AND weight_slack.meta_key = %s
-			ORDER BY deactivate.meta_value ASC",
+			ORDER BY deactivate.meta_value ASC, posts.post_type ASC",
              $platform_key,
              $twitter_message_key,
              $facebook_message_key,
