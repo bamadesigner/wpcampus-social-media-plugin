@@ -408,6 +408,54 @@ final class WPCampus_Social_Media {
 		$deactivated = (bool) get_post_meta( $post_id, $this->get_meta_key_social_deactivate(), true );
 		return $this->filter_social_deactivated( $deactivated, $post_id );
 	}
+
+	/**
+	 *
+	 */
+	public function filter_social_expired( $start_date_time_str, $end_date_time_str, int $post_id ) : bool {
+
+		$expired = false;
+
+		$utc_timezone = $this->get_utc_timezone();
+		$now = new DateTime( 'now', $utc_timezone );
+
+		if ( ! empty( $start_date_time_str ) && false !== strtotime( $start_date_time_str ) ) {
+
+			$start_date_time = new DateTime( $start_date_time_str );
+			$start_date_time->setTimezone( $utc_timezone );
+
+			// This post is expired.
+			if ( $start_date_time > $now ) {
+				$expired = true;
+			}
+		}
+
+		if ( ! $expired ) {
+
+			if ( ! empty( $end_date_time_str ) && false !== strtotime( $end_date_time_str ) ) {
+
+				$end_date_time = new DateTime( $end_date_time_str );
+				$end_date_time->setTimezone( $utc_timezone );
+
+				// This post is expired.
+				if ( $end_date_time <= $now ) {
+					$expired = true;
+				}
+			}
+		}
+
+		return (bool) apply_filters( 'wpcampus_social_expired', $expired, $start_date_time_str, $end_date_time_str, $post_id );
+	}
+
+	/**
+	 *
+	 */
+	public function is_social_expired( $post_id ) : bool {
+		$start_date_time = $this->get_social_media_start_date_time( $post_id );
+		$end_date_time = $this->get_social_media_end_date_time( $post_id );
+		return $this->filter_social_expired( $start_date_time, $end_date_time, $post_id );
+	}
+
 	/**
 	 *
 	 */
