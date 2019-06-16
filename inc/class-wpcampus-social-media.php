@@ -595,6 +595,22 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
+	public function get_social_media_start_date_time( int $post_id ) : string {
+		$start_date_time = (string) get_post_meta( $post_id, $this->get_meta_key_social_start_date_time() );
+		return $this->filter_social_media_start_date_time( $start_date_time, $post_id );
+	}
+
+	/**
+	 *
+	 */
+	public function get_social_media_end_date_time( int $post_id ) : string {
+		$end_date_time = (string) get_post_meta( $post_id, $this->get_meta_key_social_end_date_time() );
+		return $this->filter_social_media_end_date_time( $end_date_time, $post_id );
+	}
+
+	/**
+	 *
+	 */
 	public function filter_social_media_weight( string $weight, int $post_id, string $platform ) : int {
 
 		if ( empty( $weight ) ) {
