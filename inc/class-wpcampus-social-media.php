@@ -15,7 +15,16 @@ final class WPCampus_Social_Media {
 
 	const FEED_WEIGHT_DEFAULT = 5;
 
+	const META_KEY_SOCIAL_PLATFORM = 'wpc_social_platform';
+
 	const META_KEY_SOCIAL_DEACTIVATE = 'wpc_social_deactivate';
+
+	const META_KEY_SOCIAL_START_DATE_TIME = 'wpc_social_start_date_time';
+	const META_KEY_SOCIAL_END_DATE_TIME = 'wpc_social_end_date_time';
+
+	const META_KEY_SOCIAL_WEIGHT_TWITTER = 'wpc_social_weight_twitter';
+	const META_KEY_SOCIAL_WEIGHT_FACEBOOK = 'wpc_social_weight_facebook';
+	const META_KEY_SOCIAL_WEIGHT_SLACK = 'wpc_social_weight_slack';
 
 	const META_KEY_SOCIAL_MESSAGE_TWITTER = 'wpc_social_message_twitter';
 	const META_KEY_SOCIAL_MESSAGE_FACEBOOK = 'wpc_social_message_facebook';
@@ -283,8 +292,64 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
+	public function get_meta_key_social_platform() {
+		return self::META_KEY_SOCIAL_PLATFORM;
+	}
+
+	/**
+	 *
+	 */
 	public function get_meta_key_social_deactivate() : string {
 		return self::META_KEY_SOCIAL_DEACTIVATE;
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_start_date_time() : string {
+		return self::META_KEY_SOCIAL_START_DATE_TIME;
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_end_date_time() : string {
+		return self::META_KEY_SOCIAL_END_DATE_TIME;
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_weight( string $platform ) : string {
+		if ( 'twitter' == $platform ) {
+			return self::META_KEY_SOCIAL_WEIGHT_TWITTER;
+		} elseif ( 'facebook' == $platform ) {
+			return self::META_KEY_SOCIAL_WEIGHT_FACEBOOK;
+		} elseif ( 'slack' == $platform ) {
+			return self::META_KEY_SOCIAL_WEIGHT_SLACK;
+		}
+		return '';
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_weight_twitter() {
+		return $this->get_meta_key_social_weight( 'twitter' );
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_weight_facebook() {
+		return $this->get_meta_key_social_weight( 'facebook' );
+	}
+
+	/**
+	 *
+	 */
+	public function get_meta_key_social_weight_slack() {
+		return $this->get_meta_key_social_weight( 'slack' );
 	}
 
 	/**
@@ -363,16 +428,16 @@ final class WPCampus_Social_Media {
 		$timezone_offset_hours = ( abs( $current_time_offset ) / 60 ) / 60;
 		$timezone_offset_hours = ( $current_time_offset < 0 ) ? ( 0 - $timezone_offset_hours ) : $timezone_offset_hours;
 
-		$message_key = "wpc_social_message_{$platform}";
+		$platform_key = $this->get_meta_key_social_platform();
 
-		$plaform_key = 'wpc_social_platform';
+		$message_key = $this->get_meta_key_social_message( $platform );
 
-		$deactivate_key = 'wpc_social_deactivate';
+		$deactivate_key = $this->get_meta_key_social_deactivate();
 
-		$start_date_time_key = 'wpc_social_start_date_time';
-		$end_date_time_key = 'wpc_social_end_date_time';
+		$start_date_time_key = $this->get_meta_key_social_start_date_time();
+		$end_date_time_key = $this->get_meta_key_social_end_date_time();
 
-		$weight_key = "wpc_social_message_{$platform}_weight";
+		$weight_key = $this->get_meta_key_social_weight( $platform );
 
 		// @TODO remember this?
 		//CONVERT( coalesce(end_date_time.meta_value, '2038-01-01 00:00:00'), DATETIME ) desc,
@@ -386,7 +451,7 @@ final class WPCampus_Social_Media {
 			FROM (
 			    SELECT posts.ID, posts.post_modified_gmt, message.meta_value AS message FROM {$wpdb->posts} posts
 			    INNER JOIN {$wpdb->postmeta} message ON message.post_id = posts.ID AND message.meta_key = '" . $message_key . "' AND message.meta_value != ''
-			    INNER JOIN {$wpdb->postmeta} platforms ON platforms.post_id = posts.ID AND platforms.meta_key = '" . $plaform_key . "' AND platforms.meta_value LIKE '%" . $platform . "%'
+			    INNER JOIN {$wpdb->postmeta} platforms ON platforms.post_id = posts.ID AND platforms.meta_key = '" . $platform_key . "' AND platforms.meta_value LIKE '%" . $platform . "%'
 			    WHERE posts.post_type IN ('" . implode( "','", $post_types ) . "') AND posts.post_status = 'publish'
 			) AS posts
 			LEFT JOIN {$wpdb->postmeta} deactivate ON deactivate.post_id = posts.ID AND deactivate.meta_key = '" . $deactivate_key . "'
@@ -515,15 +580,13 @@ final class WPCampus_Social_Media {
 			return '';
 		}
 
-		if ( 'twitter' == $platform ) {
-			$message = get_post_meta( $post_id, $this->get_meta_key_social_message_twitter(), true );
-		} elseif ( 'facebook' == $platform ) {
-			$message = get_post_meta( $post_id, $this->get_meta_key_social_message_facebook(), true );
-		} elseif ( 'slack' == $platform ) {
-			$message = get_post_meta( $post_id, $this->get_meta_key_social_message_slack(), true );
-		} else {
-			$message = '';
+		$message_meta_key = $this->get_meta_key_social_message( $platform );
+
+		if ( empty( $message_meta_key ) ) {
+			return '';
 		}
+
+		$message = get_post_meta( $post_id, $message_meta_key, true );
 
 		// Sanitize the message.
 		return $this->sanitize_social_media_message( $message );
@@ -565,22 +628,15 @@ final class WPCampus_Social_Media {
 			$message = substr( $message, 0, $max_message_length );
 		}
 
-		if ( 'twitter' == $platform ) {
-			update_post_meta( $post_id, $this->get_meta_key_social_message_twitter(), $message );
-			return true;
+		$message_meta_key = $this->get_meta_key_social_message( $platform );
+
+		if ( empty( $message_meta_key ) ) {
+			return false;
 		}
 
-		if ( 'facebook' == $platform ) {
-			update_post_meta( $post_id, $this->get_meta_key_social_message_facebook(), $message );
-			return true;
-		}
+		update_post_meta( $post_id, $message_meta_key, $message );
 
-		if ( 'slack' == $platform ) {
-			update_post_meta( $post_id, $this->get_meta_key_social_message_slack(), $message );
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	/**
