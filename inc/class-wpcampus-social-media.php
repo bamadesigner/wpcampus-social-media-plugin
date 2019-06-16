@@ -858,4 +858,98 @@ final class WPCampus_Social_Media {
 	public function is_excluded_post( $post_id, $platform ) {
 		return in_array( $post_id, $this->get_excluded_posts( $platform ) );
 	}
+
+	/**
+	 *
+	 */
+	public function get_posts( array $args = [] ) : array {
+		global $wpdb;
+
+		// Define the defaults.
+		$defaults = [
+			'post_type' => '',
+		];
+
+		$args = wp_parse_args( $args, $defaults );
+
+		$platform_key = $this->get_meta_key_social_platform();
+
+		$twitter_message_key = $this->get_meta_key_social_message_twitter();
+		$facebook_message_key = $this->get_meta_key_social_message_facebook();
+		$slack_message_key = $this->get_meta_key_social_message_slack();
+
+		$deactivate_key = $this->get_meta_key_social_deactivate();
+
+		$start_date_time_key = $this->get_meta_key_social_start_date_time();
+		$end_date_time_key = $this->get_meta_key_social_end_date_time();
+
+		$twitter_weight_key = $this->get_meta_key_social_weight_twitter();
+		$facebook_weight_key = $this->get_meta_key_social_weight_facebook();
+		$slack_weight_key = $this->get_meta_key_social_weight_slack();
+
+		$post_type = ! empty( $args['post_type'] ) ? $args['post_type'] : $this->get_share_post_types();
+
+		if ( ! is_array( $post_type ) ) {
+			$post_type = explode( ',', $post_type );
+			$post_type = array_map( 'trim', $post_type );
+		}
+
+		$where_inner = [ "posts.post_status = 'publish'" ];
+
+		if ( ! empty( $post_type ) ) {
+			$where_inner[] = "posts.post_type IN ('" . implode( "','", $post_type ) . "')";
+		}
+
+		// @TODO remove any joins we dont need.
+		$query = "SELECT posts.ID,
+			platforms.meta_value AS platforms,
+			message_twitter.meta_value AS message_twitter,
+			message_facebook.meta_value AS message_facebook,
+			message_slack.meta_value AS message_slack,
+			deactivate.meta_value AS deactivate,
+			start_date_time.meta_value AS start_date_time,
+			end_date_time.meta_value AS end_date_time,
+			weight_twitter.meta_value AS weight_twitter,
+			weight_facebook.meta_value AS weight_facebook,
+			weight_slack.meta_value AS weight_slack
+			FROM (
+			    SELECT posts.*
+			    FROM {$wpdb->posts} posts";
+
+		if ( ! empty( $where_inner ) ) {
+			$query .= " WHERE " . implode( ' AND ', $where_inner );
+		}
+
+		$query .= $wpdb->prepare( ") AS posts
+			LEFT JOIN {$wpdb->postmeta} platforms ON platforms.post_id = posts.ID AND platforms.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} message_twitter ON message_twitter.post_id = posts.ID AND message_twitter.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} message_facebook ON message_facebook.post_id = posts.ID AND message_facebook.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} message_slack ON message_slack.post_id = posts.ID AND message_slack.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} deactivate ON deactivate.post_id = posts.ID AND deactivate.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} start_date_time ON start_date_time.post_id = posts.ID AND start_date_time.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} end_date_time ON end_date_time.post_id = posts.ID AND end_date_time.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} weight_twitter ON weight_twitter.post_id = posts.ID AND weight_twitter.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} weight_facebook ON weight_facebook.post_id = posts.ID AND weight_facebook.meta_key = %s
+			LEFT JOIN {$wpdb->postmeta} weight_slack ON weight_slack.post_id = posts.ID AND weight_slack.meta_key = %s
+			ORDER BY deactivate.meta_value ASC",
+             $platform_key,
+             $twitter_message_key,
+             $facebook_message_key,
+             $slack_message_key,
+             $deactivate_key,
+             $start_date_time_key,
+             $end_date_time_key,
+             $twitter_weight_key,
+             $facebook_weight_key,
+             $slack_weight_key
+		);
+
+		$posts = $wpdb->get_results( $query );
+
+		if ( empty( $posts ) || ! is_array( $posts ) ) {
+			return [];
+		}
+
+		return $posts;
+	}
 }
