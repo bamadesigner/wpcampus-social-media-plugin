@@ -399,6 +399,35 @@ final class WPCampus_Social_Media {
 	 */
 	public function is_social_deactivated( $post_id ) : bool {
 		return (bool) get_post_meta( $post_id, $this->get_meta_key_social_deactivate(), true );
+	/**
+	 *
+	 */
+	public function filter_social_platforms( $platforms, int $post_id ) : array {
+
+		if ( empty( $platforms ) ) {
+			return [];
+		}
+
+		if ( ! is_array( $platforms ) ) {
+			return explode( ',', $platforms );
+		}
+
+		// For some reason the array is inside another array. This pulls it out.
+		$platforms_test = $platforms;
+		$platforms_array = array_shift( $platforms_test );
+
+		if ( is_array( $platforms_array ) ) {
+			return $platforms_array;
+		}
+
+		return $platforms;
+	}
+
+	/**
+	 *
+	 */
+	public function get_social_platforms( int $post_id ) : array {
+		return $this->filter_social_platforms( get_post_meta( $post_id, $this->get_meta_key_social_platform() ) );
 	}
 
 	/**
