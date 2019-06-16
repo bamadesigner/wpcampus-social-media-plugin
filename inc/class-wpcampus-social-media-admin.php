@@ -48,6 +48,8 @@ final class WPCampus_Social_Media_Admin {
 		add_action( 'manage_pages_custom_column', [ $plugin, 'populate_columns' ], 10, 2 );
 		add_action( 'manage_posts_custom_column', [ $plugin, 'populate_columns' ], 10, 2 );
 
+		add_action( 'admin_menu', [ $plugin, 'add_pages' ] );
+
 		// Add meta boxes.
 		// @TODO add back when we want preview functionality.
 		//add_action( 'add_meta_boxes', [ $plugin, 'add_meta_boxes' ] );
@@ -69,13 +71,18 @@ final class WPCampus_Social_Media_Admin {
 	public function enqueue_styles_scripts( $hook ) {
 		global $post_type;
 
-		// We only need to load our CSS on edit screens.
-		if ( ! in_array( $hook, array( 'edit.php' ) ) ) {
-			return;
+		$allowed_hooks = [
+			'edit.php',
+			'tools_page_wpc-social-media-report',
+		];
+
+		$share_post_types = $this->helper->get_share_post_types();
+
+		foreach ( $share_post_types as $post_type ) {
+			$allowed_hooks[] = $post_type . '_page_wpc-social-media-report-' . $post_type;
 		}
 
-		// And only for our post types.
-		if ( ! in_array( $post_type, $this->helper->get_share_post_types() ) ) {
+		if ( ! in_array( $hook, $allowed_hooks ) ) {
 			return;
 		}
 
@@ -210,6 +217,118 @@ final class WPCampus_Social_Media_Admin {
 
 				break;
 		}
+	}
+
+	/**
+	 * @return void
+	 */
+	public function add_pages() {
+
+		$this->add_report_pages();
+
+	}
+
+	/**
+	 *
+	 */
+	private function add_report_pages() {
+
+		$share_post_types = $this->helper->get_share_post_types();
+
+		if ( ! empty( $share_post_types ) ) {
+
+			foreach ( $share_post_types as $post_type ) {
+
+				$parent_slug = add_query_arg( 'post_type', $post_type, 'edit.php' );
+
+				// @TODO change capability.
+				add_submenu_page(
+					$parent_slug,
+					__( 'Social Media Report', 'wpcampus-social' ),
+					__( 'Social Media', 'wpcampus-social' ),
+					'manage_options',
+					'wpc-social-media-report-' . $post_type,
+					[ $this, 'print_post_report_page' ]
+				);
+			}
+		}
+
+		// @TODO change capability?
+		add_management_page(
+			__( 'Social Media Report', 'wpcampus-social' ),
+			__( 'Social Media', 'wpcampus-social' ),
+			'manage_options',
+			'wpc-social-media-report',
+			[ $this, 'print_tools_report_page' ]
+		);
+	}
+
+	/**
+	 *
+	 */
+	public function print_post_report_page() {
+
+		$post_type = ! empty( $_GET['post_type'] ) ? strtolower( sanitize_text_field( $_GET['post_type'] ) ) : null;
+
+		?>
+		<div class="wrap">
+			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+			<?php
+
+			if ( empty( $post_type ) || ! post_type_exists( $post_type ) ) {
+
+				?>
+				<p><?php _e( 'This post type is not valid.', 'wpcampus-social' ); ?></p>
+				<?php
+
+			} else {
+
+				$posts = $this->helper->get_posts( [
+					'post_type' => $post_type,
+				] );
+
+				if ( empty( $posts ) ) {
+					?>
+					<p><?php _e( 'There are no posts to display.', 'wpcampus-social' ); ?></p>
+					<?php
+				} else {
+
+					$this->print_stats_table( $posts );
+
+				}
+			}
+
+			?>
+		</div>
+		<?php
+	}
+
+	/**
+	 *
+	 */
+	public function print_tools_report_page() {
+		?>
+		<div class="wrap">
+			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+			<?php
+
+			$posts = $this->helper->get_posts();
+
+			if ( empty( $posts ) ) {
+				?>
+				<p><?php _e( 'There are no posts to display.', 'wpcampus-social' ); ?></p>
+				<?php
+			} else {
+
+				$this->print_stats_table( $posts, [
+					'show_post_type' => true,
+				] );
+
+			}
+
+			?>
+		</div>
+		<?php
 	}
 
 	/**
