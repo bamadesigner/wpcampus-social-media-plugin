@@ -552,14 +552,14 @@ final class WPCampus_Social_Media {
 	/**
 	 *
 	 */
-	public function filter_social_media_start_date_time( string $start_date_time, int $post_id, string $platform ) : string {
+	public function filter_social_media_start_date_time( string $start_date_time, int $post_id, string $platform = '' ) : string {
 		return apply_filters( 'wpcampus_social_start_date_time', $start_date_time, $post_id, $platform );
 	}
 
 	/**
 	 *
 	 */
-	public function filter_social_media_end_date_time( string $end_date_time, int $post_id, string $platform ) : string {
+	public function filter_social_media_end_date_time( string $end_date_time, int $post_id, string $platform = '' ) : string {
 		return apply_filters( 'wpcampus_social_end_date_time', $end_date_time, $post_id, $platform );
 	}
 
