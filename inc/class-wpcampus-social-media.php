@@ -608,7 +608,7 @@ final class WPCampus_Social_Media {
 				}
 			}
 
-			$weight = $this->filter_social_media_weight( $item->weight, $item->ID, $platform );
+			$weight = $this->filter_social_media_weight( (string) $item->weight, $item->ID, $platform );
 
 			$feed_items[] = [
 				'ID'        => $item->ID,
