@@ -43,6 +43,7 @@ final class WPCampus_Social_Media_Admin {
 		add_action( 'admin_enqueue_scripts', [ $plugin, 'enqueue_styles_scripts' ] );
 
 		// Add and populate custom columns.
+		add_filter( 'manage_pages_columns', [ $plugin, 'add_columns' ], 10 );
 		add_filter( 'manage_posts_columns', [ $plugin, 'add_columns' ], 10, 2 );
 
 		add_action( 'manage_pages_custom_column', [ $plugin, 'populate_columns' ], 10, 2 );
@@ -102,7 +103,7 @@ final class WPCampus_Social_Media_Admin {
 	 * @param   $post_type - string - The post type slug.
 	 * @return  array - the filtered columns.
 	 */
-	public function add_columns( $columns, $post_type ) {
+	public function add_columns( $columns, $post_type = 'page' ) {
 
 		// Only add to share post types.
 		if ( ! in_array( $post_type, $this->helper->get_share_post_types() ) ) {
