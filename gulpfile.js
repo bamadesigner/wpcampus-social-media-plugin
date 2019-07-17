@@ -20,14 +20,13 @@ const dest = {
 };
 
 // Take care of SASS.
-gulp.task('css', function() {
+gulp.task('css', function(done) {
 	return gulp.src(src.css)
 		.pipe(sass({
 			outputStyle: 'expanded'
 		}).on('error', sass.logError))
 		.pipe(mergeMediaQueries())
 		.pipe(autoprefixer({
-			browsers: ['last 2 versions'],
 			cascade: false
 		}))
 		.pipe(cleanCSS({
@@ -37,12 +36,13 @@ gulp.task('css', function() {
 			suffix: '.min'
 		}))
 		.pipe(gulp.dest(dest.css))
-		.pipe(notify('WPC Social Media CSS compiled'));
+		.pipe(notify('WPC Social Media CSS compiled'))
+		.on('end',done);
 });
 
 // Take care of JS.
-gulp.task('js',function() {
-	gulp.src(src.js)
+gulp.task('js',function(done) {
+	return gulp.src(src.js)
 		.pipe(minify({
 			mangle: false,
 			noSource: true,
@@ -51,17 +51,19 @@ gulp.task('js',function() {
 			}
 		}))
 		.pipe(gulp.dest(dest.js))
-		.pipe(notify('WPC Social Media JS compiled'));
+		.pipe(notify('WPC Social Media JS compiled'))
+		.on('end',done);
 });
 
 // Compile all the things.
-gulp.task('compile',['css','js']);
-
-// I've got my eyes on you(r file changes).
-gulp.task('watch',['default'],function() {
-	gulp.watch(src.js,['js']);
-	gulp.watch(src.css,['css']);
-});
+gulp.task('compile',gulp.series('css','js'));
 
 // Let's get this party started.
-gulp.task('default',['compile']);
+gulp.task('default', gulp.series('compile'));
+
+// I've got my eyes on you(r file changes).
+gulp.task('watch', gulp.series('default',function(done) {
+	gulp.watch(src.js, gulp.series('js'));
+	gulp.watch(src.css,gulp.series('css'));
+	return done();
+}));
