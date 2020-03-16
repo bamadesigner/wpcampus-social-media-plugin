@@ -80,7 +80,7 @@ final class WPCampus_Social_Media_Admin {
 		$share_post_types = $this->helper->get_share_post_types();
 
 		foreach ( $share_post_types as $share_post_type ) {
-			$allowed_hooks[] = $share_post_type . '_page_wpc-social-media-report-' . $share_post_type;
+			$allowed_hooks[] = $share_post_type . 's_page_wpc-social-media-report-' . $share_post_type;
 		}
 
 		if ( ! in_array( $hook, $allowed_hooks ) ) {
