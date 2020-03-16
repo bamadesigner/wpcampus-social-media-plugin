@@ -3,10 +3,10 @@
 }
 
 .wpc-social-col-logo {
-	display: inline-block;
+	display: block;
 	width: auto;
 	height: 25px;
-	margin: 5px 5px 5px 0;
+	margin: 0;
 
 	&.deactivated {
 		opacity: 0.1;
@@ -16,7 +16,7 @@
 table.wpc-social-stats {
 	width: 100%;
 	border: 0;
-	margin: 2em 0 0;
+	margin: 1rem 0 0;
 	text-align: left;
 	border-collapse: collapse;
 	border-spacing: 0;
@@ -28,15 +28,21 @@ table.wpc-social-stats {
 	}
 
 	th {
-		background: #ddd;
 		vertical-align: bottom;
-		font-size: 1.05em;
+		font-size: 1.05rem;
 		font-weight: bold;
-		padding: 1em 0;
+		padding: 1rem 0;
 	}
 
 	td {
-		padding: 0.5em 0;
+		padding: 0.5rem;
 		vertical-align: middle;
+
+		&.wpc-social-stats__col--facebook,
+		&.wpc-social-stats__col--twitter {
+			width: 25%;
+			padding-top: 1rem;
+			padding-bottom: 1rem;
+		}
 	}
 }

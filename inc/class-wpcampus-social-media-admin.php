@@ -351,132 +351,142 @@ final class WPCampus_Social_Media_Admin {
 		?>
 		<table class="wpc-social-stats">
 			<thead>
-			<th class="wpc-social-stats__col--id">ID</th>
-			<th class="wpc-social-stats__col--title">Title</th>
-			<?php
-
-			if ( $show_post_type ) :
-				?>
-				<th class="wpc-social-stats__col--posttype">Post Type</th>
+				<th class="wpc-social-stats__col--id">ID</th>
+				<th class="wpc-social-stats__col--title">Title</th>
 				<?php
-			endif;
 
-			?>
-			<th class="wpc-social-stats__col--status">Status</th>
-			<th class="wpc-social-stats__col--platform">Platform(s)</th>
-			<th class="wpc-social-stats__col--twitter">Twitter</th>
-			<th class="wpc-social-stats__col--facebook">Facebook</th>
+				if ( $show_post_type ) :
+					?>
+					<th class="wpc-social-stats__col--posttype">Post Type</th>
+				<?php
+				endif;
+
+				?>
+				<th class="wpc-social-stats__col--status">Status</th>
+				<?php /*<th class="wpc-social-stats__col--platform">Platform(s)</th>*/ ?>
+				<th class="wpc-social-stats__col--twitter">Twitter</th>
+				<th class="wpc-social-stats__col--facebook">Facebook</th>
 			</thead>
 			<tbody>
-			<?php
-
-			$twitter_label = 'Twitter';
-			$facebook_label = 'Facebook';
-
-			$images_url = $this->helper->get_plugin_url() . 'assets/images/';
-
-			foreach ( $posts as $post ) :
-
-				$edit_link = get_edit_post_link( $post->ID );
-
-				$platforms = $this->helper->filter_social_platforms( maybe_unserialize( $post->platforms ), $post->ID );
-
-				$twitter_weight = $this->helper->filter_social_media_weight( (string) $post->weight_twitter, $post->ID, 'twitter' );
-				$facebook_weight = $this->helper->filter_social_media_weight( (string) $post->weight_facebook, $post->ID, 'facebook' );
-				//$slack_weight = $this->helper->filter_social_media_weight( (string) $post->weight_slack, $post->ID, 'slack' );
-
-				// See if we have a Twitter and Facebook message.
-				$twitter_message = $this->helper->filter_social_media_message( (string) $post->message_twitter, $post->ID, 'twitter' );
-				$facebook_message = $this->helper->filter_social_media_message( (string) $post->message_facebook, $post->ID, 'facebook' );
-				//$slack_message = $this->helper->filter_social_media_message( (string) $post->message_slack, $post->ID, 'slack' );
-
-				$is_deactivated = $this->helper->filter_social_deactivated( $post->deactivate, $post->ID );
-
-				$start_date_time = $this->helper->filter_social_media_start_date_time( (string) $post->start_date_time, $post->ID );
-				$end_date_time = $this->helper->filter_social_media_end_date_time( (string) $post->end_date_time, $post->ID );
-
-				$is_expired = $this->helper->filter_social_expired( $start_date_time, $end_date_time, $post->ID );
-
-				$status = $is_deactivated ? 'Deactivated' : ( $is_expired ? 'Expired' : '' );
-
-				?>
-				<tr>
-					<td class="wpc-social-stats__col--id"><?php echo $post->ID; ?></td>
-					<td class="wpc-social-stats__col--title"><a href="<?php echo $edit_link; ?>" aria-label="Edit this post"><?php echo get_the_title( $post->ID ); ?></a></td>
-					<?php
-
-					if ( $show_post_type ) :
-						?>
-						<td class="wpc-social-stats__col--posttype"><?php echo $post->post_type; ?></td>
-						<?php
-					endif;
-
-					?>
-					<td class="wpc-social-stats__col--status"><?php echo $status; ?></td>
-					<td class="wpc-social-stats__col--platform"><?php echo implode( '<br>', $platforms ); ?></td>
-					<td class="wpc-social-stats__col--twitter">
-						<?php
-
-						if ( ! empty( $twitter_message ) ) :
-							?>
-							<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $twitter_label ); ?>" title="<?php echo esc_attr( $twitter_message ); ?>">
-							<?php
-						else :
-
-							// @TODO this isnt setup to work.
-							/*if ( $twitter_excluded ) :
-								?>
-								<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label ); ?></em></span>
-								<?php
-							else :*/
-
-							$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $twitter_label );
-
-							?>
-							<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
-							<?php
-
-							//endif;
-						endif;
-
-						echo '<br><br>' . $twitter_weight;
-
-						?>
-					</td>
-					<td class="wpc-social-stats__col--facebook">
-						<?php
-
-						if ( ! empty( $facebook_message ) ) :
-							?>
-							<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $facebook_label ); ?>" title="<?php echo esc_attr( $facebook_message ); ?>">
-							<?php
-						else :
-
-							/*if ( $facebook_excluded ) :
-								?>
-								<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label ); ?></em></span>
-								<?php
-							else :*/
-
-							$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $facebook_label );
-
-							?>
-							<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
-							<?php
-
-							//endif;
-						endif;
-
-						echo '<br><br>' . $facebook_weight;
-
-						?>
-					</td>
-				</tr>
 				<?php
 
-			endforeach;
+				$twitter_label = 'Twitter';
+				$facebook_label = 'Facebook';
 
-			?>
+				$images_url = $this->helper->get_plugin_url() . 'assets/images/';
+
+				foreach ( $posts as $post ) :
+
+					$edit_link = get_edit_post_link( $post->ID );
+
+					$platforms = $this->helper->filter_social_platforms( maybe_unserialize( $post->platforms ), $post->ID );
+
+					$twitter_weight = $this->helper->filter_social_media_weight( (string) $post->weight_twitter, $post->ID, 'twitter' );
+					$facebook_weight = $this->helper->filter_social_media_weight( (string) $post->weight_facebook, $post->ID, 'facebook' );
+					//$slack_weight = $this->helper->filter_social_media_weight( (string) $post->weight_slack, $post->ID, 'slack' );
+
+					// See if we have a Twitter and Facebook message.
+					$twitter_message = $this->helper->filter_social_media_message( (string) $post->message_twitter, $post->ID, 'twitter' );
+					$facebook_message = $this->helper->filter_social_media_message( (string) $post->message_facebook, $post->ID, 'facebook' );
+					//$slack_message = $this->helper->filter_social_media_message( (string) $post->message_slack, $post->ID, 'slack' );
+
+					$is_deactivated = $this->helper->filter_social_deactivated( $post->deactivate, $post->ID );
+
+					$start_date_time = $this->helper->filter_social_media_start_date_time( (string) $post->start_date_time, $post->ID );
+					$end_date_time = $this->helper->filter_social_media_end_date_time( (string) $post->end_date_time, $post->ID );
+
+					$is_expired = $this->helper->filter_social_expired( $start_date_time, $end_date_time, $post->ID );
+
+					$status = $is_deactivated ? 'Deactivated' : ( $is_expired ? 'Expired' : '' );
+
+					?>
+					<tr>
+						<td class="wpc-social-stats__col--id"><?php echo $post->ID; ?></td>
+						<td class="wpc-social-stats__col--title"><a href="<?php echo $edit_link; ?>" aria-label="Edit this post"><?php echo get_the_title( $post->ID ); ?></a></td>
+						<?php
+
+						if ( $show_post_type ) :
+							?>
+							<td class="wpc-social-stats__col--posttype"><?php echo $post->post_type; ?></td>
+						<?php
+						endif;
+
+						?>
+						<td class="wpc-social-stats__col--status"><?php echo $status; ?></td>
+						<?php /*<td class="wpc-social-stats__col--platform"><?php echo implode( '<br>', $platforms ); ?></td>*/ ?>
+						<td class="wpc-social-stats__col--twitter">
+							<?php
+
+							if ( ! empty( $twitter_message ) ) :
+								?>
+								<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $twitter_label ); ?>" title="<?php echo esc_attr( $twitter_message ); ?>">
+								<?php
+
+								echo '<br>' . $twitter_message . '<br>';
+
+							else :
+
+								// @TODO this isnt setup to work.
+								/*if ( $twitter_excluded ) :
+									?>
+									<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label ); ?></em></span>
+									<?php
+								else :*/
+
+								$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $twitter_label );
+
+								?>
+								<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
+							<?php
+
+								//endif;
+							endif;
+
+							if ( empty( $status ) && ! empty( $twitter_weight ) ) {
+								echo '<br><strong>Weight:</strong><br>' . $twitter_weight;
+							}
+
+							?>
+						</td>
+						<td class="wpc-social-stats__col--facebook">
+							<?php
+
+							if ( ! empty( $facebook_message ) ) :
+								?>
+								<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $facebook_label ); ?>" title="<?php echo esc_attr( $facebook_message ); ?>">
+								<?php
+
+								echo '<br>' . $facebook_message . '<br>';
+
+							else :
+
+								/*if ( $facebook_excluded ) :
+									?>
+									<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label ); ?></em></span>
+									<?php
+								else :*/
+
+								$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $facebook_label );
+
+								?>
+								<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
+							<?php
+
+								//endif;
+							endif;
+
+							if ( empty( $status ) && ! empty( $facebook_weight ) ) {
+								echo '<br><strong>Weight:</strong><br>' . $facebook_weight;
+							}
+
+							?>
+						</td>
+					</tr>
+				<?php
+
+				endforeach;
+
+				?>
 			</tbody>
 		</table>
 		<?php
