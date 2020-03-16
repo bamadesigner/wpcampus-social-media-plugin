@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The class that powers admin functionality.
  *
@@ -27,7 +28,7 @@ final class WPCampus_Social_Media_Admin {
 	/**
 	 * We don't need to instantiate this class.
 	 */
-	protected function __construct() {}
+	protected function __construct() { }
 
 	/**
 	 * Registers all of our hooks.
@@ -99,8 +100,9 @@ final class WPCampus_Social_Media_Admin {
 	/**
 	 * Add custom admin columns for profiles.
 	 *
-	 * @param   $columns - array - An array of column names.
+	 * @param   $columns   - array - An array of column names.
 	 * @param   $post_type - string - The post type slug.
+	 *
 	 * @return  array - the filtered columns.
 	 */
 	public function add_columns( $columns, $post_type = 'page' ) {
@@ -138,7 +140,7 @@ final class WPCampus_Social_Media_Admin {
 	 *
 	 * @TODO add Slack
 	 *
-	 * @param   $column - string - The name of the column to display.
+	 * @param   $column  - string - The name of the column to display.
 	 * @param   $post_id - int - The current post ID.
 	 */
 	public function populate_columns( $column, $post_id ) {
@@ -147,9 +149,9 @@ final class WPCampus_Social_Media_Admin {
 
 			case 'wpc_social':
 
-				/*$is_deactivated = $this->helper->is_social_deactivated( $post_id );
+				$is_deactivated = $this->helper->is_social_deactivated( $post_id );
 
-				if ( $is_deactivated ) {
+				/*if ( $is_deactivated ) {
 					?>
 					<span class="wpc-social-col-message"><em><?php _e( 'This post is deactivated', 'wpcampus-social' ); ?></em></span>
 					<?php
@@ -168,51 +170,48 @@ final class WPCampus_Social_Media_Admin {
 				endif;
 
 				// See if we have a Twitter and Facebook message.
-				$twitter_message  = $this->helper->get_social_media_message( $post_id, 'twitter' );
+				$twitter_message = $this->helper->get_social_media_message( $post_id, 'twitter' );
 				$facebook_message = $this->helper->get_social_media_message( $post_id, 'facebook' );
 
 				$images_url = $this->helper->get_plugin_url() . 'assets/images/';
+
+				$img_twitter = $images_url . 'twitter-logo.svg';
+				$img_facebook = $images_url . 'facebook-logo.svg';
 
 				$twitter_label = 'Twitter';
 				$facebook_label = 'Facebook';
 
 				if ( ! empty( $twitter_message ) ) :
-					?>
-					<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $twitter_label ); ?>" title="<?php echo esc_attr( $twitter_message ); ?>">
-					<?php
+					echo $this->get_social_logo( $img_twitter, sprintf( 'This post has a %s message.', $twitter_label ), $twitter_message, $is_deactivated );
 				else :
 
 					if ( $twitter_excluded ) :
 						?>
 						<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $twitter_label ); ?></em></span>
-						<?php
+					<?php
 					else :
 
 						$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $twitter_label );
 
-						?>
-						<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
-						<?php
+						echo $this->get_social_logo( $img_twitter, $image_message, $image_message, true );
+
 					endif;
 				endif;
 
 				if ( ! empty( $facebook_message ) ) :
-					?>
-					<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $facebook_label ); ?>" title="<?php echo esc_attr( $facebook_message ); ?>">
-					<?php
+					echo $this->get_social_logo( $img_facebook, sprintf( 'This post has a %s message.', $facebook_label ), $facebook_message, $is_deactivated );
 				else :
 
 					if ( $facebook_excluded ) :
 						?>
 						<span class="wpc-social-col-message"><em><?php printf( __( 'This post is disabled for automatic sharing to %s.', 'wpcampus-social' ), $facebook_label ); ?></em></span>
-						<?php
+					<?php
 					else :
 
 						$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $facebook_label );
 
-						?>
-						<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
-						<?php
+						echo $this->get_social_logo( $img_facebook, $image_message, $image_message, true );
+
 					endif;
 				endif;
 
@@ -284,9 +283,11 @@ final class WPCampus_Social_Media_Admin {
 
 			} else {
 
-				$posts = $this->helper->get_posts( [
-					'post_type' => $post_type,
-				] );
+				$posts = $this->helper->get_posts(
+					[
+						'post_type' => $post_type,
+					]
+				);
 
 				if ( empty( $posts ) ) {
 					?>
@@ -333,16 +334,53 @@ final class WPCampus_Social_Media_Admin {
 	}
 
 	/**
+	 * Return the <img> markup for the social media logos.
+	 *
+	 * @param        $image_src
+	 * @param string $image_alt
+	 * @param string $image_title
+	 * @param bool   $is_deactivated
+	 *
+	 * @return string
+	 */
+	private function get_social_logo( $image_src, $image_alt = '', $image_title = '', $is_deactivated = false ) {
+
+		$image_attr = [
+			'class' => 'wpc-social-col-logo',
+			'src'   => $image_src,
+		];
+
+		if ( $is_deactivated ) {
+			$image_attr['class'] .= ' deactivated';
+		}
+
+		if ( ! empty( $image_alt ) ) {
+			$image_attr['alt'] = $image_alt;
+		}
+
+		if ( ! empty( $image_title ) ) {
+			$image_attr['title'] = $image_title;
+		}
+
+		$image_attr_string = '';
+		foreach ( $image_attr as $key => $value ) {
+			$image_attr_string .= " {$key}=\"" . esc_attr( $value ) . '"';
+		}
+
+		return '<img' . $image_attr_string . ' />';
+	}
+
+	/**
 	 * //@TODO setup Slack
 	 *
-	 * @param $posts - array - the post data we're displaying.
+	 * @param $posts - array - the post data we're displaying .
 	 */
 	private function print_stats_table( array $posts, array $args = [] ) {
 
 		// Define the defaults.
-		$defaults = array(
+		$defaults = [
 			'show_post_type' => false,
-		);
+		];
 
 		$args = wp_parse_args( $args, $defaults );
 
@@ -375,6 +413,9 @@ final class WPCampus_Social_Media_Admin {
 
 				$images_url = $this->helper->get_plugin_url() . 'assets/images/';
 
+				$img_twitter = $images_url . 'twitter-logo.svg';
+				$img_facebook = $images_url . 'facebook-logo.svg';
+
 				foreach ( $posts as $post ) :
 
 					$edit_link = get_edit_post_link( $post->ID );
@@ -399,8 +440,20 @@ final class WPCampus_Social_Media_Admin {
 
 					$status = $is_deactivated ? 'Deactivated' : ( $is_expired ? 'Expired' : '' );
 
+					$tr_classes = [ 'wpc-social-stats__row' ];
+
+					if ( $is_deactivated ) {
+						$tr_classes[] = 'wpc-social-stats__row--deactivated';
+					}
+
+					if ( ! empty( $tr_classes ) ) {
+						$tr_classes_str = ' class="' . implode( ' ', $tr_classes ) . '"';
+					} else {
+						$tr_classes_str = '';
+					}
+
 					?>
-					<tr>
+					<tr<?php echo $tr_classes_str; ?>>
 						<td class="wpc-social-stats__col--id"><?php echo $post->ID; ?></td>
 						<td class="wpc-social-stats__col--title"><a href="<?php echo $edit_link; ?>" aria-label="Edit this post"><?php echo get_the_title( $post->ID ); ?></a></td>
 						<?php
@@ -418,13 +471,15 @@ final class WPCampus_Social_Media_Admin {
 							<?php
 
 							if ( ! empty( $twitter_message ) ) :
-								?>
-								<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $twitter_label ); ?>" title="<?php echo esc_attr( $twitter_message ); ?>">
-								<?php
+
+								echo $this->get_social_logo( $img_twitter, sprintf( 'This post has a %s message.', $twitter_label ), $twitter_message, $is_deactivated );
 
 								echo '<br>' . $twitter_message . '<br>';
 
-							else :
+								if ( empty( $status ) && ! empty( $twitter_weight ) ) :
+									echo '<br><strong>Weight:</strong><br>' . $twitter_weight;
+								endif;
+							else:
 
 								// @TODO this isnt setup to work.
 								/*if ( $twitter_excluded ) :
@@ -435,16 +490,10 @@ final class WPCampus_Social_Media_Admin {
 
 								$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $twitter_label );
 
-								?>
-								<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>twitter-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
-							<?php
+								echo $this->get_social_logo( $img_twitter, $image_message, $image_message, true );
 
 								//endif;
 							endif;
-
-							if ( empty( $status ) && ! empty( $twitter_weight ) ) {
-								echo '<br><strong>Weight:</strong><br>' . $twitter_weight;
-							}
 
 							?>
 						</td>
@@ -452,12 +501,14 @@ final class WPCampus_Social_Media_Admin {
 							<?php
 
 							if ( ! empty( $facebook_message ) ) :
-								?>
-								<img class="wpc-social-col-logo" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php printf( esc_attr__( 'This post has a %s message.', 'wpcampus-social' ), $facebook_label ); ?>" title="<?php echo esc_attr( $facebook_message ); ?>">
-								<?php
+
+								echo $this->get_social_logo( $img_facebook, sprintf( 'This post has a %s message.', $facebook_label ), $facebook_message, $is_deactivated );
 
 								echo '<br>' . $facebook_message . '<br>';
 
+								if ( empty( $status ) && ! empty( $facebook_weight ) ) :
+									echo '<br><strong>Weight:</strong><br>' . $facebook_weight;
+								endif;
 							else :
 
 								/*if ( $facebook_excluded ) :
@@ -468,16 +519,10 @@ final class WPCampus_Social_Media_Admin {
 
 								$image_message = sprintf( esc_attr__( 'This post needs a %s message.', 'wpcampus-social' ), $facebook_label );
 
-								?>
-								<img class="wpc-social-col-logo deactivated" src="<?php echo $images_url; ?>facebook-logo.svg" alt="<?php echo $image_message; ?>" title="<?php echo $image_message; ?>">
-							<?php
+								echo $this->get_social_logo( $img_facebook, $image_message, $image_message, true );
 
 								//endif;
 							endif;
-
-							if ( empty( $status ) && ! empty( $facebook_weight ) ) {
-								echo '<br><strong>Weight:</strong><br>' . $facebook_weight;
-							}
 
 							?>
 						</td>
@@ -714,4 +759,5 @@ final class WPCampus_Social_Media_Admin {
 		wp_die();
 	}*/
 }
+
 WPCampus_Social_Media_Admin::register();
