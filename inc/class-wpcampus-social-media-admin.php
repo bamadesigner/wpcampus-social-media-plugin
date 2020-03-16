@@ -245,8 +245,8 @@ final class WPCampus_Social_Media_Admin {
 				// @TODO change capability.
 				add_submenu_page(
 					$parent_slug,
-					__( 'Social Media Report', 'wpcampus-social' ),
-					__( 'Social Media', 'wpcampus-social' ),
+					__( 'Social media report', 'wpcampus-social' ),
+					__( 'Social media', 'wpcampus-social' ),
 					'manage_options',
 					'wpc-social-media-report-' . $post_type,
 					[ $this, 'print_post_report_page' ]
@@ -256,8 +256,8 @@ final class WPCampus_Social_Media_Admin {
 
 		// @TODO change capability?
 		add_management_page(
-			__( 'Social Media Report', 'wpcampus-social' ),
-			__( 'Social Media', 'wpcampus-social' ),
+			__( 'Social media report', 'wpcampus-social' ),
+			__( 'Social media', 'wpcampus-social' ),
 			'manage_options',
 			'wpc-social-media-report',
 			[ $this, 'print_tools_report_page' ]
