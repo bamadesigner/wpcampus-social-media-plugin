@@ -44,7 +44,8 @@ final class WPCampus_Social_Media_Global {
 		add_filter( 'the_posts', [ $plugin, 'modify_social_posts' ], 100, 2 );
 
 		// Adding for the conference schedules plugin.
-		add_filter( 'wpcampus_social_end_date_time', array( $plugin, 'filter_schedule_social_end_date_time' ), 100, 3 );
+		// @TODO have to enable for during the event. Add setting?
+		//add_filter( 'wpcampus_social_end_date_time', array( $plugin, 'filter_schedule_social_end_date_time' ), 100, 3 );
 
 		// Filter the tweets.
 		add_filter( 'wpcampus_social_message', [ $plugin, 'filter_social_message' ], 10, 3 );
