@@ -17,7 +17,7 @@ final class WPCampus_Social_Media_Global {
 	/**
 	 * We don't need to instantiate this class.
 	 */
-	protected function __construct() {}
+	protected function __construct() { }
 
 	/**
 	 * Registers all of our hooks.
@@ -28,26 +28,26 @@ final class WPCampus_Social_Media_Global {
 		$plugin->helper = wpcampus_social_media();
 
 		// Runs on activation and deactivation.
-		register_activation_hook( __FILE__, array( $plugin, 'activate' ) );
-		register_deactivation_hook( __FILE__, array( $plugin, 'deactivate' ) );
+		register_activation_hook( __FILE__, [ $plugin, 'activate' ] );
+		register_deactivation_hook( __FILE__, [ $plugin, 'deactivate' ] );
 
 		// Load our text domain.
-		add_action( 'plugins_loaded', array( $plugin, 'textdomain' ) );
+		add_action( 'plugins_loaded', [ $plugin, 'textdomain' ] );
 
 		// Register our social media feeds.
-		add_filter( 'query_vars', array( $plugin, 'add_query_vars' ) );
-		add_action( 'init', array( $plugin, 'add_feeds' ) );
-		add_filter( 'template_include', array( $plugin, 'use_social_feed_template' ), 100 );
+		add_filter( 'query_vars', [ $plugin, 'add_query_vars' ] );
+		add_action( 'init', [ $plugin, 'add_feeds' ] );
+		add_filter( 'template_include', [ $plugin, 'use_social_feed_template' ], 100 );
 
-		add_filter( 'posts_pre_query', array( $plugin, 'modify_social_posts_pre_query' ), 100, 2 );
-		add_filter( 'posts_request', array( $plugin, 'modify_social_posts_request' ), 100, 2 );
-		add_filter( 'the_posts', array( $plugin, 'modify_social_posts' ), 100, 2 );
+		add_filter( 'posts_pre_query', [ $plugin, 'modify_social_posts_pre_query' ], 100, 2 );
+		add_filter( 'posts_request', [ $plugin, 'modify_social_posts_request' ], 100, 2 );
+		add_filter( 'the_posts', [ $plugin, 'modify_social_posts' ], 100, 2 );
 
 		// Adding for the conference schedules plugin.
 		add_filter( 'wpcampus_social_end_date_time', array( $plugin, 'filter_schedule_social_end_date_time' ), 100, 3 );
 
 		// Filter the tweets.
-		add_filter( 'wpcampus_social_message', array( $plugin, 'filter_social_message' ), 10, 3 );
+		add_filter( 'wpcampus_social_message', [ $plugin, 'filter_social_message' ], 10, 3 );
 
 	}
 
@@ -135,7 +135,7 @@ final class WPCampus_Social_Media_Global {
 	 *
 	 * @param array|null $posts Return an array of post data to short-circuit WP's query,
 	 *                          or null to allow WP to run its normal queries.
-	 * @param WP_Query   $query  The WP_Query instance (passed by reference).
+	 * @param WP_Query   $query The WP_Query instance (passed by reference).
 	 *
 	 * @return int
 	 */
@@ -152,11 +152,11 @@ final class WPCampus_Social_Media_Global {
 	 * Make the main query blank so we can run our own query in the feed file.
 	 *
 	 * @param string   $request The complete SQL query.
-	 * @param WP_Query $query    The WP_Query instance (passed by reference).
+	 * @param WP_Query $query   The WP_Query instance (passed by reference).
 	 *
 	 * @return string
 	 */
-	public function modify_social_posts_request( $request, $query ) : string {
+	public function modify_social_posts_request( $request, $query ): string {
 
 		if ( ! $this->helper->is_social_feed( $query ) ) {
 			return $request;
@@ -167,6 +167,8 @@ final class WPCampus_Social_Media_Global {
 
 	/**
 	 * Needs to be in site timezone.
+	 *
+	 * @TODO - Be able to compose and store a tweet for each session thats’ pre event (promo), during event (livestream) and post event video
 	 */
 	public function filter_schedule_social_end_date_time( $end_date_time, $post_id, $platform ) {
 		if ( 'schedule' != get_post_type( $post_id ) ) {
@@ -213,7 +215,7 @@ final class WPCampus_Social_Media_Global {
 		$post = get_post( $post_id );
 
 		$current_tweet_length = strlen( $message );
-		$tweet_max_length     = $this->helper->get_max_message_length( $platform );
+		$tweet_max_length = $this->helper->get_max_message_length( $platform );
 
 		$ellipses = '...';
 
@@ -252,7 +254,7 @@ final class WPCampus_Social_Media_Global {
 			}
 
 			// Make sure what we want to prefix isn't too long.
-			$prefix_length     = strlen( $message_prefix );
+			$prefix_length = strlen( $message_prefix );
 			$prefix_max_length = $has_url_placeholder ? ( $tweet_max_length - $url_placeholder_length - 1 ) : $tweet_max_length;
 
 			/*
