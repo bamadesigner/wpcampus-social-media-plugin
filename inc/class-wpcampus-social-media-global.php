@@ -50,6 +50,9 @@ final class WPCampus_Social_Media_Global {
 		// Filter the tweets.
 		add_filter( 'wpcampus_social_message', [ $plugin, 'filter_social_message' ], 10, 3 );
 
+		// Manage the REST API.
+		add_action( 'rest_api_init', [ $plugin, 'register_rest_routes' ] );
+
 	}
 
 	/**
@@ -352,5 +355,271 @@ final class WPCampus_Social_Media_Global {
 
 		return $message;
 	}
+
+	/**
+	 * Register our custom REST routes.
+	 */
+	public function register_rest_routes() {
+
+		register_rest_route(
+			'wpcampus',
+			'/tweets/',
+			[
+				'methods'  => 'GET',
+				'callback' => [ $this, 'rest_response_tweets' ],
+			]
+		);
+	}
+
+	/**
+	 * Return latest tweets as REST response.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function rest_response_tweets() {
+		return new WP_REST_Response( $this->get_latest_tweets() );
+	}
+
+	/**
+	 * Get the latest tweets.
+	 *
+	 * First checks cache. Then requests from Twitter.
+	 *
+	 * @return array|WP_Error
+	 */
+	private function get_latest_tweets() {
+
+		$stored_tweets_transient = $this->get_latest_tweets_transient_name();
+
+		$stored_tweets = get_transient( $stored_tweets_transient );
+
+		// Means the cache is valid.
+		if ( false !== $stored_tweets ) {
+			return $stored_tweets;
+		}
+
+		/*
+		 * We have to request fresh tweets.
+		 *
+		 * Start with getting a token.
+		 */
+		$token = $this->get_stored_twitter_token();
+
+		/*
+		 * Keep track of whether or not we used a fresh token
+		 * so we can try the request again with a fresh token.
+		 */
+		$used_fresh_token = false;
+		if ( empty( $stored_token ) ) {
+			$used_fresh_token = true;
+			$token = $this->request_fresh_twitter_token();
+		}
+
+		$tweets = $this->request_latest_tweets( $token );
+
+		if ( is_wp_error( $tweets ) ) {
+
+			// Try again with a fresh token.
+			if ( ! $used_fresh_token ) {
+
+				$token = $this->request_fresh_twitter_token();
+
+				$tweets = $this->request_latest_tweets( $token );
+
+				if ( is_wp_error( $tweets ) ) {
+					$tweets = [];
+				}
+			} else {
+				$tweets = [];
+			}
+		}
+
+		// If empty, see if we have some stored tweets to use for now.
+		if ( empty( $tweets ) ) {
+
+			// Check the transient value and use as backup data.
+			$stored_tweets_value = $this->get_latest_tweets_transient_value();
+			if ( ! empty( $stored_tweets_value ) ) {
+				return $stored_tweets_value;
+			}
+
+			return [];
+		}
+
+		// Update stored tweets.
+		set_transient( $stored_tweets_transient, $tweets, HOUR_IN_SECONDS );
+
+		return $tweets;
+	}
+
+	/**
+	 * Return the transient name for our latest tweets.
+	 *
+	 * @return string
+	 */
+	private function get_latest_tweets_transient_name() {
+		return 'wpc_latest_tweets';
+	}
+
+	/**
+	 * Get the latest tweets transient value.
+	 *
+	 * @return mixed
+	 */
+	private function get_latest_tweets_transient_value() {
+		return get_option( '_transient_' . $this->get_latest_tweets_transient_name() );
+	}
+
+	/**
+	 * Get the stored Twitter token.
+	 *
+	 * @return mixed
+	 */
+	private function get_stored_twitter_token() {
+		return get_option( 'wpc_twitter_token' );
+	}
+
+	/**
+	 * Update the stored Twitter token.
+	 *
+	 * @param $token - string
+	 *
+	 * @return mixed
+	 */
+	private function store_twitter_token( $token ) {
+		return update_option( 'wpc_twitter_token', $token );
+	}
+
+	/**
+	 * Request latest tweets from Twitter's API.
+	 *
+	 * @param $token
+	 *
+	 * @return array|WP_Error
+	 */
+	private function request_latest_tweets( $token ) {
+
+		if ( empty( $token ) ) {
+			return new WP_Error( 'wpcampus_get_tweets', "You're missing a Twitter authentication token." );
+		}
+
+		$url = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
+
+		$screen_name = 'wpcampusorg';
+
+		$url_args = [
+			'screen_name' => $screen_name,
+			'count'       => 10,
+			'tweet_mode'  => 'extended',
+		];
+
+		$url = add_query_arg( $url_args, $url );
+
+		$response = wp_safe_remote_get(
+			$url,
+			[
+				'headers' => [
+					'Authorization' => 'Bearer ' . $token,
+				],
+			]
+		);
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+
+		if ( 401 === $response_code ) {
+			return new WP_Error( 'wpcampus_get_tweets', 'The request was unauthorized.' );
+		}
+
+		if ( 200 !== $response_code ) {
+			return new WP_Error( 'wpcampus_get_tweets', 'The response was invalid.' );
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+
+		if ( empty( $body ) ) {
+			return [];
+		}
+
+		$headers = wp_remote_retrieve_headers( $response );
+
+		// Convert to JSON.
+		if ( ! empty( $headers['content-type'] ) && 0 === strpos( $headers['content-type'], 'application/json' ) ) {
+			$body = json_decode( $body );
+		}
+
+		if ( empty( $body ) ) {
+			return [];
+		}
+
+		return $body;
+	}
+
+	/**
+	 * Request new authorization token from Twitter.
+	 *
+	 * @return string|WP_Error
+	 */
+	private function request_fresh_twitter_token() {
+
+		$url = 'https://api.twitter.com/oauth2/token';
+
+		if ( ! defined( 'WPC_TWITTER_API_KEY' ) || empty( WPC_TWITTER_API_KEY ) ) {
+			$error = new WP_Error( 'wpcampus_get_twitter_token', 'The Twitter API key is undefined.' );
+		}
+
+		if ( ! defined( 'WPC_TWITTER_API_SECRET' ) || empty( WPC_TWITTER_API_SECRET ) ) {
+			$error = new WP_Error( 'wpcampus_get_twitter_token', 'The Twitter API secret is undefined.' );
+		}
+
+		$response = wp_safe_remote_post(
+			$url,
+			[
+				'body'    => 'grant_type=client_credentials',
+				'headers' => [
+					'Content-Type'  => 'application/x-www-form-urlencoded',
+					'Authorization' => 'Basic ' . base64_encode( WPC_TWITTER_API_KEY . ':' . WPC_TWITTER_API_SECRET ),
+				],
+			]
+		);
+
+		$error = new WP_Error( 'wpcampus_get_twitter_token', 'The response was invalid.' );
+
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return $error;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+
+		if ( empty( $body ) ) {
+			return $error;
+		}
+
+		$headers = wp_remote_retrieve_headers( $response );
+
+		// Convert to JSON.
+		if ( ! empty( $headers['content-type'] ) && 0 === strpos( $headers['content-type'], 'application/json' ) ) {
+			$body = json_decode( $body );
+		}
+
+		if ( empty( $body ) ) {
+			return $error;
+		}
+
+		if ( empty( $body->token_type ) || 'bearer' != $body->token_type ) {
+			return $error;
+		}
+
+		if ( empty( $body->access_token ) ) {
+			return $error;
+		}
+
+		$token = $body->access_token;
+
+		// Update stored token.
+		$this->store_twitter_token( $token );
+
+		return $token;
+	}
 }
+
 WPCampus_Social_Media_Global::register();
