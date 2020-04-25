@@ -391,11 +391,15 @@ final class WPCampus_Social_Media_Global {
 
 		$stored_tweets_transient = $this->get_latest_tweets_transient_name();
 
-		$stored_tweets = get_transient( $stored_tweets_transient );
+		$cache_bust = ! empty( $_GET['cache_bust'] );
+		if ( ! $cache_bust ) {
 
-		// Means the cache is valid.
-		if ( false !== $stored_tweets ) {
-			return $stored_tweets;
+			$stored_tweets = get_transient( $stored_tweets_transient );
+
+			// Means the cache is valid.
+			if ( false !== $stored_tweets ) {
+				return $stored_tweets;
+			}
 		}
 
 		/*
