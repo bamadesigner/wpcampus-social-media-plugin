@@ -511,6 +511,7 @@ final class WPCampus_Social_Media_Global {
 			'screen_name' => $screen_name,
 			'count'       => 10,
 			'tweet_mode'  => 'extended',
+			'include_rts' => 'false',
 		];
 
 		$url = add_query_arg( $url_args, $url );
